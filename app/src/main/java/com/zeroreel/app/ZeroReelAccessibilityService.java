@@ -2,6 +2,8 @@ package com.zeroreel.app;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -17,6 +19,7 @@ import java.util.Locale;
 public class ZeroReelAccessibilityService extends AccessibilityService {
     private static final String TAG = "ZeroReelService";
     private static final long BLOCK_COOLDOWN_MS = 1500L;
+    private static final long INSTAGRAM_COOLDOWN_MS = 4000L;
     private static final long SAMPLE_MS = 1000L;
 
     private long lastBlockTime = 0L;
@@ -56,23 +59,32 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         if (platform == null) return;
         if (!Prefs.platformEnabled(this, platform.prefKey, platform.defaultEnabled)) return;
 
+        String className = event.getClassName() != null ? event.getClassName().toString() : "";
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        String viewHit = null;
+        String chatView = null;
+        if (root != null) {
+            try {
+                viewHit = findViewId(root, BlockRules.viewIds(platform), 0);
+                if (platform == BlockRules.Platform.INSTAGRAM) {
+                    chatView = findViewId(root, BlockRules.INSTAGRAM_CHAT_VIEW_IDS, 0);
+                }
+            } finally {
+                root.recycle();
+            }
+        }
+        if (platform == BlockRules.Platform.INSTAGRAM
+                && (chatView != null || matchHint(className, BlockRules.INSTAGRAM_CHAT_CLASS_HINTS) != null)) {
+            return;
+        }
+
         boolean matched;
         String reason;
         if (platform.blockEntireApp) {
             matched = true;
             reason = "entire-app";
         } else {
-            String className = event.getClassName() != null ? event.getClassName().toString() : "";
             String classHit = matchHint(className, BlockRules.classHints(platform));
-            String viewHit = null;
-            AccessibilityNodeInfo root = getRootInActiveWindow();
-            if (root != null) {
-                try {
-                    viewHit = findViewId(root, BlockRules.viewIds(platform), 0);
-                } finally {
-                    root.recycle();
-                }
-            }
             if (viewHit != null) {
                 matched = true;
                 reason = viewHit;
@@ -101,18 +113,51 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
             if (!UsageStore.budgetExhausted(this)) return;
         }
 
-        if (now - lastBlockTime <= BLOCK_COOLDOWN_MS) return;
+        long cooldown = platform == BlockRules.Platform.INSTAGRAM ? INSTAGRAM_COOLDOWN_MS : BLOCK_COOLDOWN_MS;
+        if (now - lastBlockTime <= cooldown) return;
         lastBlockTime = now;
         UsageStore.recordBlock(this);
         writeLog("BLOCKED [" + packageName + "] " + reason);
         Log.w(TAG, "Blocked " + packageName + " via " + reason);
 
-        if (platform.blockEntireApp) {
+        if (platform == BlockRules.Platform.INSTAGRAM) {
+            if (!openInstagramChat(packageName)) {
+                performGlobalAction(GLOBAL_ACTION_BACK);
+            }
+            Toast.makeText(this, R.string.blocked_instagram_chat, Toast.LENGTH_SHORT).show();
+        } else if (platform.blockEntireApp) {
             performGlobalAction(GLOBAL_ACTION_HOME);
+            Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
         } else {
             performGlobalAction(GLOBAL_ACTION_BACK);
+            Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
         }
-        Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean openInstagramChat(String packageName) {
+        String[] uris = {
+                "instagram://direct-inbox",
+                "https://www.instagram.com/direct/inbox/",
+                "https://ig.me/"
+        };
+        for (String uri : uris) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                intent.setPackage(packageName);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                return true;
+            } catch (Exception ignored) {
+            }
+        }
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/direct/inbox/"));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private String findViewId(AccessibilityNodeInfo node, String[] targetIds, int depth) {

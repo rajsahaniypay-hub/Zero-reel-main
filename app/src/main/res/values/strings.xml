@@ -9,6 +9,7 @@
     <string name="guard_active">Blocking Reels after restart. Authenticator required to stop.</string>
     <string name="guard_paused">Temporarily paused</string>
     <string name="blocked_toast">Zero Reel blocked that feed</string>
+    <string name="blocked_instagram_chat">Reels blocked. Opening Instagram chat.</string>
     <string name="strict_lock_title">Strict uninstall lock</string>
     <string name="strict_lock_help">Regular device admin only adds an extra Settings tap. Strict lock uses Android Device Owner so the Uninstall button is disabled until you disarm with an authenticator code.\n\nOn a computer with USB debugging:\n1. Install Zero Reel and finish setup.\n2. If the command fails, remove Google accounts from the phone first (or use a test phone).\n3. Run this command:\n\nadb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver\n\nThen open Zero Reel and tap Apply strict lock.\n\nFactory reset can still wipe the phone. That is Android\'s last-resort escape, not a hidden backdoor.</string>
 </resources>

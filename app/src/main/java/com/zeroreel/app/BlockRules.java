@@ -75,22 +75,34 @@ final class BlockRules {
             "shortsvideo"
     };
 
-    // AntiScroll Instagram Reels IDs + extra reel surfaces
+    // Full-screen Reels viewer only. Short IDs like reel_viewer also match the
+    // home tray and keep pressing Back until Instagram closes.
     static final String[] INSTAGRAM_VIEW_IDS = {
             "clips_viewer_view_pager",
-            "reel_viewer_title",
-            "reel_viewer",
             "clips_video_container",
-            "clips_viewer",
-            "reel_viewer_root",
             "clips_viewer_video_layout"
     };
 
     static final String[] INSTAGRAM_CLASS_HINTS = {
-            "clipsviewer",
-            "reelviewer",
-            "clips.viewer",
-            "reel.viewer"
+            "clipsvieweractivity",
+            "clips.viewer.clipsviewer",
+            "reelwatchactivity"
+    };
+
+    static final String[] INSTAGRAM_CHAT_CLASS_HINTS = {
+            "directinbox",
+            "directthread",
+            "direct.inbox",
+            "direct.msys",
+            "inboxactivity"
+    };
+
+    static final String[] INSTAGRAM_CHAT_VIEW_IDS = {
+            "direct_inbox",
+            "inbox_empty",
+            "thread_message",
+            "direct_thread",
+            "row_inbox"
     };
 
     static final String[] FACEBOOK_VIEW_IDS = {
