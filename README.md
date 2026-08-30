@@ -1,31 +1,63 @@
-# AntiScroll
+# Zero Reel
 
-An open-source Android accessibility service app designed to help users reduce screen time by blocking short-form video feeds across popular platforms like YouTube Shorts and Instagram Reels.
+Android self-control app that blocks short-form video (Reels, Shorts, TikTok, Facebook Reels, Spotlight). After you arm it once, blocking starts again when the phone reboots. Changing settings, pausing, or removing uninstall protection requires a **6-digit authenticator code** (Google Authenticator, Authy, or any TOTP app).
 
-## Features
-- **YouTube Shorts Blocking:** Analyzes UI structures combined with Window State events to back you out of endless Shorts.
-- **Instagram Reels Blocking:** Targets explicit Reel viewer View IDs to prevent doom-scrolling. 
-- **Privacy-First:** Operates entirely locally on your device via Android Accessibility Services. No data is collected or transmitted.
-- **Anime Wisdom:** Displays motivational Anime quotes to inspire discipline.
-- **Beautiful UI:** Polished Material Design 3 UI with dark mode, subtle animations, and zero user-tracking ads.
+AntiScroll is kept only as the source of YouTube Shorts and Instagram Reels view-ID rules.
 
-## How it works
-This app utilizes the `AccessibilityService` API to listen for specific Window State Change events. Once it detects the resource IDs or class names specific to the short-form content in target apps, it immediately triggers the `GLOBAL_ACTION_BACK` feature (a simulated "Back" button press) to pop the user back into their main feed or home screen.
+## What this is
+
+A **visible** app on your phone. You install it, add a TOTP secret to an authenticator app, turn on Accessibility and Device Admin, then arm it.
+
+Once armed:
+
+- A foreground service and boot receiver start protection after restart
+- Device admin makes Android ask you to deactivate the app before uninstall
+- Authenticator code is required inside Zero Reel to pause, change the block list, or disarm
+
+## What this is not
+
+Zero Reel is **not** a hidden or undeletable program. Android does not allow an app to hide itself from Settings or survive every removal path.
+
+These still work, by design:
+
+- Factory reset
+- `adb uninstall`
+- Turning off Accessibility in system settings
+- Deactivating device admin from Android Settings (the app warns you first)
+
+Those limits are intentional. A secretly undeletable app would be malware.
+
+## What gets blocked
+
+From AntiScroll (GPL-3.0):
+
+- YouTube Shorts view IDs such as `shorts_container`, `reel_player_page`, `reel_recycler`
+- Instagram Reels view IDs such as `clips_viewer_view_pager`, `reel_viewer`
+
+Added in Zero Reel:
+
+- Extra YouTube / Instagram IDs and class-name fallbacks
+- TikTok (whole app, because the feed is short-form)
+- Facebook and Messenger Reels
+- Snapchat Spotlight
+- Daily allowance (off / 5 / 15 / 30 minutes) before hard block
+- Blocks-today counter
+- 5-minute pause (authenticator required)
+- Debug log in app storage
+
+Normal YouTube videos, Instagram posts, Facebook feed, and Snapchat chat are not the target. TikTok is treated as all short-form.
 
 ## Setup
-To install AntiScroll on your phone during development:
-1. Open this project in Android Studio.
-2. Build -> Make Project
-3. Run the app on a connected physical device or emulator.
-4. Enable the **Accessibility Permission** when prompted inside the app. 
 
-*Note: For Android 13+ devices, sideloaded applications enforce restricted settings. You must open Settings -> Apps -> AntiScroll -> 3-dots Menu -> "Allow restricted settings" before Android will allow you to enable the Accessibility Service.*
+1. Open the project in Android Studio and install it on a phone (Android 8+).
+2. Add the shown secret to an authenticator app and confirm a live code.
+3. Enable **Zero Reel** in Accessibility settings.
+4. Enable **uninstall protection** (device admin). This does not wipe data or hide the app.
+5. Optionally ignore battery optimizations so OEMs do not kill the service.
+6. Tap **Arm Zero Reel**.
+
+To uninstall later: **Disarm and allow uninstall** with a valid authenticator code, then uninstall from Settings.
 
 ## License
-AntiScroll is licensed under the [GPL-3.0 License](LICENSE).
-In short: You can freely use, modify, and distribute this software, but any derivative works or distributed versions must also be fully open-source.
 
----
-Made with ❤️ by @yadavnikhil03
-
-Source: imported from [yadavnikhil03/AntiScroll](https://github.com/yadavnikhil03/AntiScroll) (`AntiScroll-main`).
+GPL-3.0. YouTube Shorts and Instagram Reels signatures come from [yadavnikhil03/AntiScroll](https://github.com/yadavnikhil03/AntiScroll).

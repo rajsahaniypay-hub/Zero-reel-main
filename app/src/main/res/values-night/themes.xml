@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AntiScroll" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowBackground">#000000</item>
-        <item name="android:textColorPrimary">#FFFFFF</item>
-        <item name="android:textColorSecondary">#888888</item>
-        <item name="android:statusBarColor">#000000</item>
+    <style name="Theme.ZeroReel" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">#071614</item>
+        <item name="android:textColorPrimary">#F4FFFD</item>
+        <item name="android:textColorSecondary">#9BB8B5</item>
+        <item name="android:statusBarColor">#071614</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="colorButtonNormal">#1F1F1F</item>
-        <item name="colorControlActivated">#0db9f2</item>
+        <item name="colorButtonNormal">#122422</item>
+        <item name="colorControlActivated">#3DCDC4</item>
+        <item name="colorPrimary">#3DCDC4</item>
+        <item name="colorPrimaryVariant">#0B7A75</item>
+        <item name="colorOnPrimary">#071614</item>
     </style>
 </resources>

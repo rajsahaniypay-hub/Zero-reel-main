@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AntiScroll</string>
-    <string name="accessibility_service_description">AntiScroll requires accessibility permission to detect specific UI patterns and block continuous scrolling.</string>
+    <string name="app_name">Zero Reel</string>
+    <string name="accessibility_service_description">Zero Reel watches supported apps and backs you out of Shorts, Reels, TikTok, Facebook Reels, and Spotlight. It does not read passwords or send data off the phone.</string>
+    <string name="admin_explanation">Zero Reel uses device admin only so Android asks you to deactivate it before uninstall. Deactivate it from the app with your authenticator code. This does not hide the app or wipe the phone.</string>
+    <string name="admin_disable_warning">Zero Reel protection is on. Disarm it from the Zero Reel app with your authenticator code before removing uninstall protection.</string>
+    <string name="guard_channel_name">Protection</string>
+    <string name="guard_channel_desc">Shows that Zero Reel is still running after restart</string>
+    <string name="guard_active">Blocking Reels after restart. Authenticator required to stop.</string>
+    <string name="guard_paused">Temporarily paused</string>
+    <string name="blocked_toast">Zero Reel blocked that feed</string>
 </resources>
