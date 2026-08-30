@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Shield body - fills the safe zone nicely -->
+    <path
+        android:fillColor="#0db9f2"
+        android:pathData="M54,18 L78,28 C78,28 80,54 76,66 C72,78 54,90 54,90 C54,90 36,78 32,66 C28,54 30,28 30,28 Z" />
+
+    <!-- Inner shield fill - darker shade for depth -->
+    <path
+        android:fillColor="#0a8ec2"
+        android:pathData="M54,24 L73,32 C73,32 75,54 72,64 C69,74 54,84 54,84 C54,84 39,74 36,64 C33,54 35,32 35,32 Z" />
+
+    <!-- Phone/scroll icon inside shield - small rounded rect -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.9"
+        android:pathData="M48,38 L60,38 C62,38 63,39 63,41 L63,67 C63,69 62,70 60,70 L48,70 C46,70 45,69 45,67 L45,41 C45,39 46,38 48,38 Z" />
+
+    <!-- Screen area inside phone -->
+    <path
+        android:fillColor="#0a8ec2"
+        android:pathData="M47,42 L61,42 L61,66 L47,66 Z" />
+
+    <!-- Three scroll lines on screen -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M50,48 L58,48" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M50,53 L58,53" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M50,58 L56,58" />
+
+    <!-- Bold diagonal slash - the "anti" / "no" symbol -->
+    <path
+        android:strokeColor="#FF4444"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M40,32 L68,76" />
+
+</vector>
