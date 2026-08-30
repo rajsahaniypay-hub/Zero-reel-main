@@ -13,18 +13,22 @@ final class UsageStore {
     private static final String ALLOWED_MS = "usage_allowed_ms";
     private static final String URGE_TODAY = "urge_today_";
     private static final String URGE_TOTAL = "urge_total_";
+    private static final String LAST_AT = "urge_last_at";
+    private static final String LAST_APP = "urge_last_app";
 
     private UsageStore() {}
 
     static void recordBlock(Context context, BlockRules.Platform platform) {
         SharedPreferences prefs = roll(context);
         SharedPreferences.Editor editor = prefs.edit()
-                .putInt(BLOCKS, prefs.getInt(BLOCKS, 0) + 1);
+                .putInt(BLOCKS, prefs.getInt(BLOCKS, 0) + 1)
+                .putLong(LAST_AT, System.currentTimeMillis());
         if (platform != null) {
             editor.putInt(todayKey(platform), prefs.getInt(todayKey(platform), 0) + 1);
             editor.putInt(totalKey(platform), prefs.getInt(totalKey(platform), 0) + 1);
+            editor.putString(LAST_APP, platform.label);
         }
-        editor.apply();
+        editor.commit();
     }
 
     static void addAllowedMs(Context context, long deltaMs) {
@@ -65,7 +69,23 @@ final class UsageStore {
     }
 
     static String formatAppCount(Context context, BlockRules.Platform platform) {
-        return urgesTotal(context, platform) + "  ·  " + urgesToday(context, platform) + " today";
+        return urgesTotal(context, platform) + " total  ·  " + urgesToday(context, platform) + " today";
+    }
+
+    static String formatLast(Context context) {
+        SharedPreferences prefs = roll(context);
+        long at = prefs.getLong(LAST_AT, 0L);
+        String app = prefs.getString(LAST_APP, "");
+        if (at <= 0L || app == null || app.isEmpty()) {
+            return "No urges recorded yet";
+        }
+        long agoSec = Math.max(0L, (System.currentTimeMillis() - at) / 1000L);
+        String when;
+        if (agoSec < 5) when = "just now";
+        else if (agoSec < 60) when = agoSec + "s ago";
+        else if (agoSec < 3600) when = (agoSec / 60) + "m ago";
+        else when = (agoSec / 3600) + "h ago";
+        return "Last: " + app + " · " + when;
     }
 
     private static String todayKey(BlockRules.Platform platform) {

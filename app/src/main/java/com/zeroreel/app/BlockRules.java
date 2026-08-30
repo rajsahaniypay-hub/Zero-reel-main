@@ -14,7 +14,7 @@ final class BlockRules {
         INSTAGRAM(Prefs.APP_INSTAGRAM, true, false, "Instagram Reels"),
         TIKTOK(Prefs.APP_TIKTOK, true, true, "TikTok"),
         FACEBOOK(Prefs.APP_FACEBOOK, true, false, "Facebook Reels"),
-        SNAPCHAT(Prefs.APP_SNAPCHAT, true, false, "Snapchat Spotlight");
+        SNAPCHAT(Prefs.APP_SNAPCHAT, true, false, "Snapchat Stories / Spotlight");
 
         final String prefKey;
         final boolean defaultEnabled;
@@ -92,12 +92,21 @@ final class BlockRules {
             "clips_viewer"
     };
 
+    static final String[] INSTAGRAM_STRICT_VIEW_IDS = {
+            "clips_viewer_view_pager",
+            "clips_video_container",
+            "clips_viewer_video_layout",
+            "clips_watch_and_browse"
+    };
+
     static final String[] INSTAGRAM_CLASS_HINTS = {
             "clipsvieweractivity",
-            "clips.viewer.clipsviewer",
+            "clips.viewer",
             "clipsviewerfragment",
+            "clipsviewer",
             "reelwatchactivity",
-            "reelsviewer"
+            "reelsviewer",
+            "reels.viewer"
     };
 
     static final String[] INSTAGRAM_CHAT_CLASS_HINTS = {
@@ -132,7 +141,9 @@ final class BlockRules {
             "reelsactivity",
             "fbshorts",
             "shortformvideo",
-            "fullscreenvideoviewer"
+            "fullscreenvideoviewer",
+            "immersivevideo",
+            "video.player"
     };
 
     static final String[] FACEBOOK_CONTENT_DESCS = {
@@ -142,7 +153,15 @@ final class BlockRules {
 
     static final String[] FACEBOOK_CONTENT_CONTAINS = {
             "fbshorts",
-            "fb_shorts"
+            "fb_shorts",
+            "shortscomposer",
+            "reels_viewer"
+    };
+
+    static final String[] VIDEO_SURFACE_CLASSES = {
+            "android.view.TextureView",
+            "android.view.SurfaceView",
+            "android.widget.VideoView"
     };
 
     // Tab a11y labels look like "Reels, tab 2 of 6". Bare "Reels" also appears
@@ -165,20 +184,36 @@ final class BlockRules {
             "account_settings"
     };
 
-    // Spotlight viewer only. A bare "spotlight" or "discover_feed" also matches
-    // Camera / Stories and Back then exits Snapchat.
+    // Spotlight and full-screen Stories only. Tiny story rings on Camera must
+    // not match — those IDs are accepted only when the node is large.
     static final String[] SNAPCHAT_VIEW_IDS = {
             "spotlight_container",
             "spotlight_player",
             "spotlight_pager",
-            "spotlight_video"
+            "spotlight_video",
+            "spotlight_feed",
+            "story_viewer",
+            "stories_viewer",
+            "story_player",
+            "opera_viewer",
+            "opera_viewpager"
     };
 
     static final String[] SNAPCHAT_CLASS_HINTS = {
             "spotlightactivity",
             "spotlight.activity",
             "discover.spotlight",
-            "spotlightfeed"
+            "spotlightfeed",
+            "operaactivity",
+            "storyviewer",
+            "storiesactivity",
+            "playbackactivity"
+    };
+
+    static final String[] SNAPCHAT_SELECTED_PREFIXES = {
+            "Spotlight,",
+            "Stories,",
+            "Discover,"
     };
 
     static final String[] SNAPCHAT_SAFE_CLASS_HINTS = {
@@ -202,10 +237,10 @@ final class BlockRules {
     static final String FACEBOOK_REEL_RECYCLER = "androidx.recyclerview.widget.RecyclerView";
     static final String FACEBOOK_REEL_BUTTON = "android.widget.Button";
     static final String FACEBOOK_REEL_SURFACE = "android.view.SurfaceView";
-    static final float FACEBOOK_REEL_MIN_WIDTH = 0.7f;
-    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.5f;
-    static final float VIEWER_MIN_WIDTH = 0.55f;
-    static final float VIEWER_MIN_HEIGHT = 0.45f;
+    static final float FACEBOOK_REEL_MIN_WIDTH = 0.55f;
+    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.4f;
+    static final float VIEWER_MIN_WIDTH = 0.45f;
+    static final float VIEWER_MIN_HEIGHT = 0.35f;
 
     private BlockRules() {}
 
@@ -300,6 +335,19 @@ final class BlockRules {
             if (value.regionMatches(true, 0, prefix, 0, prefix.length())) return true;
         }
         return false;
+    }
+
+    static boolean isStrictViewId(Platform platform, String viewId) {
+        if (platform == Platform.INSTAGRAM) return matchHint(viewId, INSTAGRAM_STRICT_VIEW_IDS);
+        if (platform == Platform.FACEBOOK) return matchHint(viewId, FACEBOOK_VIEW_IDS);
+        return false;
+    }
+
+    static boolean isVideoSurface(String className) {
+        if (className == null) return false;
+        return className.endsWith("TextureView")
+                || className.endsWith("SurfaceView")
+                || className.endsWith("VideoView");
     }
 
     static boolean isFacebookReelClass(String className) {

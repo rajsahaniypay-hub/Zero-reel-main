@@ -27,7 +27,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
     private static final long BLOCK_COOLDOWN_MS = 1500L;
     private static final long REDIRECT_COOLDOWN_MS = 4000L;
     private static final long SAMPLE_MS = 1000L;
-    private static final int TREE_DEPTH = 20;
+    private static final int TREE_DEPTH = 28;
 
     private long lastBlockTime = 0L;
     private long lastSampleTime = 0L;
@@ -74,7 +74,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         ScanResult scan = new ScanResult();
         scan.classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
         scan.safeSurface = BlockRules.matchHint(className, BlockRules.safeClassHints(platform));
-        scanAllWindows(platform, scan);
+        scanAllWindows(event, platform, scan);
 
         // Chat/camera wins only when the reel viewer is not actually on screen.
         // A chat icon on Spotlight or a Messages tab on Facebook must not hide Reels.
@@ -131,19 +131,20 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         Log.w(TAG, "Blocked " + packageName + " via " + reason);
 
         if (platform == BlockRules.Platform.INSTAGRAM) {
-            if (!openUris(packageName, instagramChatUris())) {
-                performGlobalAction(GLOBAL_ACTION_BACK);
-            }
+            performGlobalAction(GLOBAL_ACTION_BACK);
+            openUris(packageName, instagramChatUris());
             Toast.makeText(this, R.string.blocked_instagram_chat, Toast.LENGTH_SHORT).show();
         } else if (platform == BlockRules.Platform.SNAPCHAT) {
             performGlobalAction(GLOBAL_ACTION_BACK);
             Toast.makeText(this, R.string.blocked_snapchat_chat, Toast.LENGTH_SHORT).show();
         } else if (platform == BlockRules.Platform.FACEBOOK) {
-            boolean messenger = BlockRules.isMessengerPackage(packageName);
-            if (messenger || !openUris(packageName, facebookSettingsUris())) {
-                performGlobalAction(GLOBAL_ACTION_BACK);
+            performGlobalAction(GLOBAL_ACTION_BACK);
+            if (!BlockRules.isMessengerPackage(packageName)) {
+                openUris(packageName, facebookSettingsUris());
             }
-            Toast.makeText(this, messenger ? R.string.blocked_toast : R.string.blocked_facebook_settings, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, BlockRules.isMessengerPackage(packageName)
+                    ? R.string.blocked_toast
+                    : R.string.blocked_facebook_settings, Toast.LENGTH_SHORT).show();
         } else if (platform.blockEntireApp) {
             performGlobalAction(GLOBAL_ACTION_HOME);
             Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
@@ -153,11 +154,10 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void scanAllWindows(BlockRules.Platform platform, ScanResult scan) {
+    private void scanAllWindows(AccessibilityEvent event, BlockRules.Platform platform, ScanResult scan) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         int screenWidth = metrics.widthPixels;
         int screenHeight = metrics.heightPixels;
-        boolean scanned = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             List<AccessibilityWindowInfo> windows = getWindows();
             if (windows != null) {
@@ -166,11 +166,8 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                     AccessibilityNodeInfo root = null;
                     try {
                         root = window.getRoot();
-                        if (root != null) {
-                            scanned = true;
-                            if (!scan.hasReelSignal()) {
-                                walkTree(root, platform, scan, 0, screenWidth, screenHeight);
-                            }
+                        if (root != null && !scan.hasReelSignal()) {
+                            walkTree(root, platform, scan, 0, screenWidth, screenHeight);
                         }
                     } finally {
                         if (root != null) root.recycle();
@@ -179,13 +176,34 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                 }
             }
         }
-        if (scanned) return;
-        AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root != null) {
+        AccessibilityNodeInfo active = getRootInActiveWindow();
+        if (active != null) {
             try {
-                walkTree(root, platform, scan, 0, screenWidth, screenHeight);
+                if (!scan.hasReelSignal()) {
+                    walkTree(active, platform, scan, 0, screenWidth, screenHeight);
+                }
             } finally {
-                root.recycle();
+                active.recycle();
+            }
+        }
+        AccessibilityNodeInfo source = event != null ? event.getSource() : null;
+        if (source != null) {
+            try {
+                if (!scan.hasReelSignal()) {
+                    walkTree(source, platform, scan, 0, screenWidth, screenHeight);
+                    AccessibilityNodeInfo parent = source.getParent();
+                    if (parent != null) {
+                        try {
+                            if (!scan.hasReelSignal()) {
+                                walkTree(parent, platform, scan, 0, screenWidth, screenHeight);
+                            }
+                        } finally {
+                            parent.recycle();
+                        }
+                    }
+                }
+            } finally {
+                source.recycle();
             }
         }
     }
@@ -212,15 +230,21 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                 }
                 if (scan.viewHit == null) {
                     String hit = BlockRules.firstHint(viewId, BlockRules.viewIds(platform));
-                    if (hit != null && isOnScreenViewer(node, platform, screenWidth, screenHeight)) {
+                    if (hit != null && viewerNodeCounts(node, viewId, platform, screenWidth, screenHeight)) {
                         scan.viewHit = viewId;
                     }
                 }
                 if (scan.classHit == null) {
                     String classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
-                    if (classHit != null && isOnScreenViewer(node, platform, screenWidth, screenHeight)) {
+                    if (classHit != null && viewerNodeCounts(node, viewId, platform, screenWidth, screenHeight)) {
                         scan.classHit = classHit;
                     }
+                }
+                if (!scan.facebookStructure
+                        && (platform == BlockRules.Platform.INSTAGRAM || platform == BlockRules.Platform.FACEBOOK)
+                        && BlockRules.isVideoSurface(className)
+                        && isLargeViewer(node, screenWidth, screenHeight)) {
+                    scan.facebookStructure = true;
                 }
                 if (platform == BlockRules.Platform.FACEBOOK) {
                     if (scan.contentHit == null && (
@@ -252,6 +276,14 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                     if (BlockRules.matchSelectedPrefix(content, selected, BlockRules.FACEBOOK_SELECTED_PREFIXES)) {
                         scan.selectedHit = content;
                     } else if (BlockRules.matchSelectedPrefix(label, selected, BlockRules.FACEBOOK_SELECTED_PREFIXES)) {
+                        scan.selectedHit = label;
+                    }
+                }
+                if (platform == BlockRules.Platform.SNAPCHAT && scan.selectedHit == null) {
+                    boolean selected = node.isSelected();
+                    if (BlockRules.matchSelectedPrefix(content, selected, BlockRules.SNAPCHAT_SELECTED_PREFIXES)) {
+                        scan.selectedHit = content;
+                    } else if (BlockRules.matchSelectedPrefix(label, selected, BlockRules.SNAPCHAT_SELECTED_PREFIXES)) {
                         scan.selectedHit = label;
                     }
                 }
@@ -418,15 +450,19 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         }
     }
 
-    private boolean isOnScreenViewer(
+    private boolean viewerNodeCounts(
             AccessibilityNodeInfo node,
+            String viewId,
             BlockRules.Platform platform,
             int screenWidth,
             int screenHeight
     ) {
         node.getBoundsInScreen(nodeBounds);
-        if (nodeBounds.width() < 16 || nodeBounds.height() < 16) return false;
-        if (platform == BlockRules.Platform.INSTAGRAM || platform == BlockRules.Platform.FACEBOOK) {
+        if (nodeBounds.width() < 32 || nodeBounds.height() < 32) return false;
+        if (BlockRules.isStrictViewId(platform, viewId)) return true;
+        if (platform == BlockRules.Platform.INSTAGRAM
+                || platform == BlockRules.Platform.FACEBOOK
+                || platform == BlockRules.Platform.SNAPCHAT) {
             return isLargeViewer(node, screenWidth, screenHeight);
         }
         return true;
