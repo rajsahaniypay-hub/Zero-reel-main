@@ -47,15 +47,13 @@ Zero Reel will not arm until it is Device Owner.
 
 1. Install the APK and finish authenticator + Accessibility + device admin.
 2. Remove Google accounts from the phone (temporary).
-3. Run:
+3. On the Device Owner screen, tap **Copy the one command** and paste it once:
 
 ```
-adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver
-adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS
-adb shell dumpsys deviceidle whitelist +com.zeroreel.app
+adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver && adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS && adb shell dumpsys deviceidle whitelist +com.zeroreel.app
 ```
 
-4. Tap **Apply Device Owner lock**, then add the same Google account back.
+4. The app notices Device Owner by itself. Tap **Sign back into Google**, then **Open Zero Reel**.
 
 That locks uninstall, force-stop, battery limits, Safe Mode, extra users, and USB debugging. Accessibility is turned back on if you switch it off.
 

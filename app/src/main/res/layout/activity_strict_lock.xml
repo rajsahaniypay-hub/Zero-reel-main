@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Device Owner required"
+            android:text="Make Zero Reel Device Owner"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -24,84 +24,89 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:lineSpacingMultiplier="1.3"
-            android:text="Checking…"
+            android:text="This screen watches for Device Owner and finishes itself."
             android:textSize="14sp" />
 
         <TextView
+            android:id="@+id/text_step_accounts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:lineSpacingMultiplier="1.35"
-            android:text="Zero Reel will not arm until it is Device Owner. That is the only official way to lock Uninstall, force-stop, and battery. Android requires that no Google account is on the phone for the first command. Add the same account back after the lock is on."
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="1. Remove Google accounts"
-            android:textStyle="bold" />
+            android:text="1. Waiting: remove Google accounts"
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btn_open_accounts"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open Accounts" />
+            android:layout_marginTop="6dp"
+            android:text="Remove Google accounts" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/text_step_debug"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="2. Turn on debugging"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:text="2. Turn on USB or Wireless debugging"
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btn_open_developer"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open Developer options" />
+            android:layout_marginTop="6dp"
+            android:text="Open debugging settings" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/text_step_command"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="3. Run all three commands"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:text="3. Paste this one command"
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/text_required_commands"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:background="?attr/colorButtonNormal"
             android:fontFamily="monospace"
             android:padding="12dp"
             android:textIsSelectable="true"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/btn_copy_required"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Copy required commands" />
+            android:text="Copy the one command" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Computer: paste in a terminal. No computer: Wireless debugging + aShell/LADB on this phone. This screen updates by itself when it works."
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btn_add_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Sign back into Google"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_apply_now"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Apply Device Owner lock" />
-
-        <Button
-            android:id="@+id/btn_done"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Continue" />
+            android:layout_marginTop="8dp"
+            android:text="Open Zero Reel"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

@@ -19,9 +19,9 @@ final class ProtectLock {
     }
 
     static String requiredCommands(Context context) {
-        return adbCommand(context) + "\n"
-                + AccessibilityKeeper.grantCommand(context) + "\n"
-                + StaySignedIn.batteryCommand(context);
+        return adbCommand(context)
+                + " && " + AccessibilityKeeper.grantCommand(context)
+                + " && " + StaySignedIn.batteryCommand(context);
     }
 
     static boolean isDeviceOwner(Context context) {
@@ -30,10 +30,9 @@ final class ProtectLock {
     }
 
     static boolean ready(Context context) {
-        return isDeviceOwner(context)
-                && uninstallBlocked(context)
-                && DeviceStatus.accessibilityEnabled(context)
-                && AccessibilityKeeper.canRestore(context);
+        if (!isDeviceOwner(context)) return false;
+        apply(context);
+        return uninstallBlocked(context);
     }
 
     static boolean uninstallBlocked(Context context) {
