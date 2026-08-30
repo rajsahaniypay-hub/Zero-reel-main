@@ -36,7 +36,7 @@ Added in Zero Reel:
 - TikTok (whole app, because the feed is short-form)
 - Facebook and Messenger Reels (content descriptions, selected Reels tab, not the main feed)
 - Snapchat Spotlight only (`spotlight_container`; Camera, Chat, and Stories stay open)
-- Instagram / Snapchat / Facebook send you to chat or messages instead of closing the app
+- Instagram sends you to chat. Facebook Reels send you to Facebook Settings. Snapchat Spotlight uses Back (no broken link). Overlay Reels windows are scanned too.
 - Daily allowance (off / 5 / 15 / 30 minutes) before hard block
 - Per-app urge counters (lifetime and today)
 - 5-minute pause (authenticator required)

@@ -5,11 +5,15 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 import android.widget.Toast;
+
+import java.util.List;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -38,6 +42,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         if (info != null) {
             info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
                     | AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+                    | AccessibilityEvent.TYPE_WINDOWS_CHANGED
                     | AccessibilityEvent.TYPE_VIEW_SELECTED;
             info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
             info.flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
@@ -69,16 +74,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         ScanResult scan = new ScanResult();
         scan.classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
         scan.safeSurface = BlockRules.matchHint(className, BlockRules.safeClassHints(platform));
-
-        AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root != null) {
-            try {
-                DisplayMetrics metrics = getResources().getDisplayMetrics();
-                walkTree(root, platform, scan, 0, metrics.widthPixels, metrics.heightPixels);
-            } finally {
-                root.recycle();
-            }
-        }
+        scanAllWindows(platform, scan);
 
         // Chat/camera wins only when the reel viewer is not actually on screen.
         // A chat icon on Spotlight or a Messages tab on Facebook must not hide Reels.
@@ -127,7 +123,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
             if (!UsageStore.budgetExhausted(this)) return;
         }
 
-        long cooldown = BlockRules.usesChatRedirect(platform) ? REDIRECT_COOLDOWN_MS : BLOCK_COOLDOWN_MS;
+        long cooldown = BlockRules.usesRedirect(platform) ? REDIRECT_COOLDOWN_MS : BLOCK_COOLDOWN_MS;
         if (now - lastBlockTime <= cooldown) return;
         lastBlockTime = now;
         UsageStore.recordBlock(this, platform);
@@ -140,21 +136,57 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
             }
             Toast.makeText(this, R.string.blocked_instagram_chat, Toast.LENGTH_SHORT).show();
         } else if (platform == BlockRules.Platform.SNAPCHAT) {
-            if (!openUris(packageName, snapchatChatUris())) {
-                performGlobalAction(GLOBAL_ACTION_BACK);
-            }
+            performGlobalAction(GLOBAL_ACTION_BACK);
             Toast.makeText(this, R.string.blocked_snapchat_chat, Toast.LENGTH_SHORT).show();
         } else if (platform == BlockRules.Platform.FACEBOOK) {
-            if (!openUris(packageName, facebookChatUris(packageName))) {
+            boolean messenger = BlockRules.isMessengerPackage(packageName);
+            if (messenger || !openUris(packageName, facebookSettingsUris())) {
                 performGlobalAction(GLOBAL_ACTION_BACK);
             }
-            Toast.makeText(this, R.string.blocked_facebook_messages, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, messenger ? R.string.blocked_toast : R.string.blocked_facebook_settings, Toast.LENGTH_SHORT).show();
         } else if (platform.blockEntireApp) {
             performGlobalAction(GLOBAL_ACTION_HOME);
             Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
         } else {
             performGlobalAction(GLOBAL_ACTION_BACK);
             Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void scanAllWindows(BlockRules.Platform platform, ScanResult scan) {
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int screenWidth = metrics.widthPixels;
+        int screenHeight = metrics.heightPixels;
+        boolean scanned = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            List<AccessibilityWindowInfo> windows = getWindows();
+            if (windows != null) {
+                for (AccessibilityWindowInfo window : windows) {
+                    if (window == null) continue;
+                    AccessibilityNodeInfo root = null;
+                    try {
+                        root = window.getRoot();
+                        if (root != null) {
+                            scanned = true;
+                            if (!scan.hasReelSignal()) {
+                                walkTree(root, platform, scan, 0, screenWidth, screenHeight);
+                            }
+                        }
+                    } finally {
+                        if (root != null) root.recycle();
+                        window.recycle();
+                    }
+                }
+            }
+        }
+        if (scanned) return;
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root != null) {
+            try {
+                walkTree(root, platform, scan, 0, screenWidth, screenHeight);
+            } finally {
+                root.recycle();
+            }
         }
     }
 
@@ -180,13 +212,20 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                 }
                 if (scan.viewHit == null) {
                     String hit = BlockRules.firstHint(viewId, BlockRules.viewIds(platform));
-                    if (hit != null) scan.viewHit = viewId;
+                    if (hit != null && isOnScreenViewer(node, platform, screenWidth, screenHeight)) {
+                        scan.viewHit = viewId;
+                    }
                 }
                 if (scan.classHit == null) {
-                    scan.classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
+                    String classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
+                    if (classHit != null && isOnScreenViewer(node, platform, screenWidth, screenHeight)) {
+                        scan.classHit = classHit;
+                    }
                 }
                 if (platform == BlockRules.Platform.FACEBOOK) {
-                    if (scan.contentHit == null && BlockRules.matchExactContentDesc(content, BlockRules.FACEBOOK_CONTENT_DESCS)) {
+                    if (scan.contentHit == null && (
+                            BlockRules.matchExactContentDesc(content, BlockRules.FACEBOOK_CONTENT_DESCS)
+                                    || BlockRules.matchContains(content, BlockRules.FACEBOOK_CONTENT_CONTAINS))) {
                         scan.contentHit = content;
                     }
                     if (scan.selectedHit == null) {
@@ -201,6 +240,19 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                             && BlockRules.FACEBOOK_REEL_RECYCLER.equals(className)
                             && isFacebookReelStructure(node, className, screenWidth, screenHeight, depth)) {
                         scan.facebookStructure = true;
+                    }
+                    if (!scan.facebookStructure
+                            && BlockRules.FACEBOOK_REEL_SURFACE.equals(className)
+                            && isLargeViewer(node, screenWidth, screenHeight)) {
+                        scan.facebookStructure = true;
+                    }
+                }
+                if (platform == BlockRules.Platform.INSTAGRAM && scan.selectedHit == null) {
+                    boolean selected = node.isSelected();
+                    if (BlockRules.matchSelectedPrefix(content, selected, BlockRules.FACEBOOK_SELECTED_PREFIXES)) {
+                        scan.selectedHit = content;
+                    } else if (BlockRules.matchSelectedPrefix(label, selected, BlockRules.FACEBOOK_SELECTED_PREFIXES)) {
+                        scan.selectedHit = label;
                     }
                 }
             }
@@ -286,20 +338,13 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 intent.setPackage(packageName);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                if (intent.resolveActivity(getPackageManager()) == null) continue;
                 startActivity(intent);
                 return true;
             } catch (Exception ignored) {
             }
         }
-        if (uris.length == 0) return false;
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uris[uris.length - 1]));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            return true;
-        } catch (Exception ignored) {
-            return false;
-        }
+        return false;
     }
 
     private static String[] instagramChatUris() {
@@ -310,26 +355,12 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         };
     }
 
-    private static String[] snapchatChatUris() {
+    private static String[] facebookSettingsUris() {
         return new String[] {
-                "snapchat://chat",
-                "snapchat://notification/chat_on_friendsfeed",
-                "https://www.snapchat.com/"
-        };
-    }
-
-    private static String[] facebookChatUris(String packageName) {
-        if (BlockRules.isMessengerPackage(packageName)) {
-            return new String[] {
-                    "fb-messenger://threads",
-                    "https://www.messenger.com/"
-            };
-        }
-        return new String[] {
-                "fb://messaging",
-                "fb://messages",
-                "https://www.facebook.com/messages",
-                "https://m.facebook.com/messages"
+                "fb://account_settings",
+                "fb://faceweb/f?href=/settings",
+                "fb://legacy_app_settings",
+                "https://m.facebook.com/settings"
         };
     }
 
@@ -385,6 +416,27 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         boolean hasReelSignal() {
             return viewHit != null || classHit != null || contentHit != null || selectedHit != null || facebookStructure;
         }
+    }
+
+    private boolean isOnScreenViewer(
+            AccessibilityNodeInfo node,
+            BlockRules.Platform platform,
+            int screenWidth,
+            int screenHeight
+    ) {
+        node.getBoundsInScreen(nodeBounds);
+        if (nodeBounds.width() < 16 || nodeBounds.height() < 16) return false;
+        if (platform == BlockRules.Platform.INSTAGRAM || platform == BlockRules.Platform.FACEBOOK) {
+            return isLargeViewer(node, screenWidth, screenHeight);
+        }
+        return true;
+    }
+
+    private boolean isLargeViewer(AccessibilityNodeInfo node, int screenWidth, int screenHeight) {
+        node.getBoundsInScreen(nodeBounds);
+        float widthFrac = screenWidth > 0 ? (float) nodeBounds.width() / screenWidth : 0f;
+        float heightFrac = screenHeight > 0 ? (float) nodeBounds.height() / screenHeight : 0f;
+        return widthFrac >= BlockRules.VIEWER_MIN_WIDTH && heightFrac >= BlockRules.VIEWER_MIN_HEIGHT;
     }
 
     private boolean isLargeSafeSurface(

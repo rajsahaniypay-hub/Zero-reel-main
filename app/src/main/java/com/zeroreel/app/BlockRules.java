@@ -79,18 +79,25 @@ final class BlockRules {
             "shortsvideo"
     };
 
-    // Full-screen Reels viewer only. Short IDs like reel_viewer also match the
-    // home tray and keep pressing Back until Instagram closes.
+    // Viewer IDs, including the overlay window that opens from feed/explore.
+    // Matching still requires a large on-screen node so the home tray is ignored.
     static final String[] INSTAGRAM_VIEW_IDS = {
             "clips_viewer_view_pager",
             "clips_video_container",
-            "clips_viewer_video_layout"
+            "clips_viewer_video_layout",
+            "clips_viewer_container",
+            "clips_watch_and_browse",
+            "reel_viewer_root",
+            "reel_viewer",
+            "clips_viewer"
     };
 
     static final String[] INSTAGRAM_CLASS_HINTS = {
             "clipsvieweractivity",
             "clips.viewer.clipsviewer",
-            "reelwatchactivity"
+            "clipsviewerfragment",
+            "reelwatchactivity",
+            "reelsviewer"
     };
 
     static final String[] INSTAGRAM_CHAT_CLASS_HINTS = {
@@ -114,7 +121,9 @@ final class BlockRules {
     static final String[] FACEBOOK_VIEW_IDS = {
             "reels_viewer",
             "reels_viewer_container",
-            "video_player_reels"
+            "video_player_reels",
+            "fb_shorts",
+            "shorts_viewer"
     };
 
     static final String[] FACEBOOK_CLASS_HINTS = {
@@ -122,12 +131,18 @@ final class BlockRules {
             "reels.viewer",
             "reelsactivity",
             "fbshorts",
-            "shortformvideo"
+            "shortformvideo",
+            "fullscreenvideoviewer"
     };
 
     static final String[] FACEBOOK_CONTENT_DESCS = {
             "FbShortsComposerAttachmentComponentSpec_STICKER",
             "FbShortsComposerAttachmentComponentSpec_GIF"
+    };
+
+    static final String[] FACEBOOK_CONTENT_CONTAINS = {
+            "fbshorts",
+            "fb_shorts"
     };
 
     // Tab a11y labels look like "Reels, tab 2 of 6". Bare "Reels" also appears
@@ -137,20 +152,17 @@ final class BlockRules {
             "Reels, tab"
     };
 
-    static final String[] FACEBOOK_CHAT_CLASS_HINTS = {
-            "threadview",
-            "inboxfragment",
-            "messagesinbox",
-            "messagingactivity",
-            "messagelist"
+    static final String[] FACEBOOK_SAFE_CLASS_HINTS = {
+            "settingsactivity",
+            "accountsettings",
+            "legacy_app_settings",
+            "preferenceactivity"
     };
 
-    static final String[] FACEBOOK_CHAT_VIEW_IDS = {
-            "thread_list",
-            "message_list",
-            "inbox_container",
-            "messenger_inbox",
-            "thread_view"
+    static final String[] FACEBOOK_SAFE_VIEW_IDS = {
+            "settings_list",
+            "preference",
+            "account_settings"
     };
 
     // Spotlight viewer only. A bare "spotlight" or "discover_feed" also matches
@@ -190,8 +202,10 @@ final class BlockRules {
     static final String FACEBOOK_REEL_RECYCLER = "androidx.recyclerview.widget.RecyclerView";
     static final String FACEBOOK_REEL_BUTTON = "android.widget.Button";
     static final String FACEBOOK_REEL_SURFACE = "android.view.SurfaceView";
-    static final float FACEBOOK_REEL_MIN_WIDTH = 0.9f;
-    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.75f;
+    static final float FACEBOOK_REEL_MIN_WIDTH = 0.7f;
+    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.5f;
+    static final float VIEWER_MIN_WIDTH = 0.55f;
+    static final float VIEWER_MIN_HEIGHT = 0.45f;
 
     private BlockRules() {}
 
@@ -227,7 +241,7 @@ final class BlockRules {
     static String[] safeViewIds(Platform platform) {
         switch (platform) {
             case INSTAGRAM: return INSTAGRAM_CHAT_VIEW_IDS;
-            case FACEBOOK: return FACEBOOK_CHAT_VIEW_IDS;
+            case FACEBOOK: return FACEBOOK_SAFE_VIEW_IDS;
             case SNAPCHAT: return SNAPCHAT_SAFE_VIEW_IDS;
             default: return new String[0];
         }
@@ -236,16 +250,23 @@ final class BlockRules {
     static String[] safeClassHints(Platform platform) {
         switch (platform) {
             case INSTAGRAM: return INSTAGRAM_CHAT_CLASS_HINTS;
-            case FACEBOOK: return FACEBOOK_CHAT_CLASS_HINTS;
+            case FACEBOOK: return FACEBOOK_SAFE_CLASS_HINTS;
             case SNAPCHAT: return SNAPCHAT_SAFE_CLASS_HINTS;
             default: return new String[0];
         }
     }
 
-    static boolean usesChatRedirect(Platform platform) {
-        return platform == Platform.INSTAGRAM
-                || platform == Platform.FACEBOOK
-                || platform == Platform.SNAPCHAT;
+    static boolean usesRedirect(Platform platform) {
+        return platform == Platform.INSTAGRAM || platform == Platform.FACEBOOK;
+    }
+
+    static boolean matchContains(String value, String[] needles) {
+        if (value == null || needles == null) return false;
+        String lower = value.toLowerCase(java.util.Locale.US);
+        for (String needle : needles) {
+            if (lower.contains(needle.toLowerCase(java.util.Locale.US))) return true;
+        }
+        return false;
     }
 
     static boolean isMessengerPackage(String packageName) {

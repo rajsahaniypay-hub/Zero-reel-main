@@ -10,8 +10,8 @@
     <string name="guard_paused">Temporarily paused</string>
     <string name="blocked_toast">Zero Reel blocked that feed</string>
     <string name="blocked_instagram_chat">Reels blocked. Opening Instagram chat.</string>
-    <string name="blocked_snapchat_chat">Spotlight blocked. Opening Snapchat chat.</string>
-    <string name="blocked_facebook_messages">Reels blocked. Opening Facebook messages.</string>
+    <string name="blocked_snapchat_chat">Spotlight blocked.</string>
+    <string name="blocked_facebook_settings">Reels blocked. Opening Facebook settings.</string>
     <string name="strict_lock_title">Strict uninstall lock</string>
     <string name="strict_lock_help">Blocking works without Device Owner. Device Owner is the strongest self-control lock: Uninstall disabled, Accessibility locked on, Safe Mode and extra users blocked, until you disarm with an authenticator code.\n\nOn a computer with USB debugging:\n1. Install Zero Reel and finish setup.\n2. If the command fails, remove Google accounts from the phone first (or use a test phone).\n3. Run this command:\n\nadb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver\n\nThen open Zero Reel and tap Apply Device Owner policies.\n\nFactory reset can still wipe the phone. That is Android\'s last-resort escape, not a hidden backdoor.</string>
 </resources>
