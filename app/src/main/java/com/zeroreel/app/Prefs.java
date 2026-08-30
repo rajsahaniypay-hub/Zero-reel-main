@@ -89,4 +89,21 @@ final class Prefs {
     static void clearTotpFailures(Context context) {
         get(context).edit().putInt(FAIL_COUNT, 0).putLong(FAIL_LOCK_UNTIL, 0L).apply();
     }
+
+    static void completeAndArm(Context context) {
+        SharedPreferences prefs = get(context);
+        boolean firstArm = !prefs.getBoolean(SETUP_COMPLETE, false);
+        SharedPreferences.Editor editor = prefs.edit()
+                .putBoolean(SETUP_COMPLETE, true)
+                .putBoolean(LOCK_ARMED, true)
+                .putBoolean(MASTER_ENABLED, true);
+        if (firstArm) {
+            editor.putBoolean(APP_YOUTUBE, true)
+                    .putBoolean(APP_INSTAGRAM, true)
+                    .putBoolean(APP_TIKTOK, true)
+                    .putBoolean(APP_FACEBOOK, true)
+                    .putBoolean(APP_SNAPCHAT, true);
+        }
+        editor.apply();
+    }
 }

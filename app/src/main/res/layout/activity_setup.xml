@@ -25,7 +25,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="20dp"
             android:lineSpacingMultiplier="1.3"
-            android:text="This is a visible self-control app, not a hidden process. After you arm it, blocking starts on boot and Android asks you to deactivate device admin before uninstall. Stopping it requires a 6-digit authenticator code.\n\nAndroid still allows factory reset and ADB uninstall. That is by design."
+            android:text="This is a visible self-control app, not a hidden process. After you arm it, blocking starts on boot. Stopping it requires a 6-digit authenticator code.\n\nDevice Owner is optional. It is the strongest self-control lock (uninstall disabled, Accessibility locked, Safe Mode blocked). You can add it later from the dashboard.\n\nAndroid still allows factory reset. That is by design."
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp" />
 
@@ -144,7 +144,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Continue to Device Owner"
+            android:text="Arm Zero Reel"
             app:cornerRadius="12dp" />
     </LinearLayout>
 </ScrollView>

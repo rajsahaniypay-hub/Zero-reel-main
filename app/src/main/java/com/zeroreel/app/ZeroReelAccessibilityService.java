@@ -56,7 +56,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null || event.getPackageName() == null) return;
-        if (!Prefs.masterEnabled(this) || Prefs.isPaused(this) || !ProtectLock.isDeviceOwner(this)) return;
+        if (!Prefs.masterEnabled(this) || Prefs.isPaused(this)) return;
 
         String packageName = event.getPackageName().toString();
         if (packageName.equals(getPackageName())) return;
@@ -130,7 +130,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         long cooldown = BlockRules.usesChatRedirect(platform) ? REDIRECT_COOLDOWN_MS : BLOCK_COOLDOWN_MS;
         if (now - lastBlockTime <= cooldown) return;
         lastBlockTime = now;
-        UsageStore.recordBlock(this);
+        UsageStore.recordBlock(this, platform);
         writeLog("BLOCKED [" + packageName + "] " + reason);
         Log.w(TAG, "Blocked " + packageName + " via " + reason);
 

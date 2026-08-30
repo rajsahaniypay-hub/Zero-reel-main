@@ -102,10 +102,11 @@ public class SetupActivity extends AppCompatActivity {
     }
 
     private void refreshStatus() {
-        setStatus(R.id.text_access_status, DeviceStatus.accessibilityEnabled(this), "Accessibility on", "Accessibility off");
-        setStatus(R.id.text_admin_status, ProtectLock.ready(this),
-                "Device Owner ready", "Device Owner required");
-        setStatus(R.id.text_battery_status, DeviceStatus.batteryUnrestricted(this), "Battery unrestricted", "Battery may kill the service");
+        setStatus(R.id.text_access_status, DeviceStatus.accessibilityEnabled(this), "Accessibility on", "Accessibility off — required");
+        setStatus(R.id.text_admin_status, DeviceStatus.adminActive(this),
+                "Uninstall protection on", "Uninstall protection off — recommended");
+        setStatus(R.id.text_battery_status, DeviceStatus.batteryUnrestricted(this),
+                "Battery unrestricted", "Battery may kill the service — recommended");
     }
 
     private void setStatus(int id, boolean ok, String good, String bad) {
@@ -132,25 +133,7 @@ public class SetupActivity extends AppCompatActivity {
             startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
             return;
         }
-        if (!DeviceStatus.adminActive(this)) {
-            Toast.makeText(this, "Enable device admin first.", Toast.LENGTH_LONG).show();
-            return;
-        }
-        if (!ProtectLock.ready(this)) {
-            startActivity(new Intent(this, StrictLockActivity.class));
-            return;
-        }
-
-        Prefs.get(this).edit()
-                .putBoolean(Prefs.SETUP_COMPLETE, true)
-                .putBoolean(Prefs.LOCK_ARMED, true)
-                .putBoolean(Prefs.MASTER_ENABLED, true)
-                .putBoolean(Prefs.APP_YOUTUBE, true)
-                .putBoolean(Prefs.APP_INSTAGRAM, true)
-                .putBoolean(Prefs.APP_TIKTOK, true)
-                .putBoolean(Prefs.APP_FACEBOOK, true)
-                .putBoolean(Prefs.APP_SNAPCHAT, true)
-                .apply();
+        Prefs.completeAndArm(this);
         ProtectLock.apply(this);
         BlockGuardService.start(this);
         startActivity(new Intent(this, MainActivity.class));

@@ -28,11 +28,6 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-        if (!ProtectLock.ready(this)) {
-            startActivity(new Intent(this, StrictLockActivity.class));
-            finish();
-            return;
-        }
         setContentView(R.layout.activity_main);
 
         if (Prefs.masterEnabled(this)) {
@@ -136,11 +131,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (!ProtectLock.ready(this)) {
-            startActivity(new Intent(this, StrictLockActivity.class));
-            finish();
-            return;
-        }
         ProtectLock.apply(this);
         refresh();
     }
@@ -182,13 +172,13 @@ public class MainActivity extends AppCompatActivity {
             status.setTextColor(0xFFFFA000);
             detail.setText("Blocking resumes in " + Math.max(1, Prefs.pauseRemainingMs(this) / 60000L) + " min.");
         } else if (armed && ProtectLock.ready(this)) {
-            status.setText("ARMED · DEVICE OWNER");
+            status.setText("ARMED · MAX LOCK");
             status.setTextColor(0xFF2E7D32);
-            detail.setText("Uninstall, force-stop, battery, Safe Mode, extra users, and USB debugging are locked. Authenticator required to disarm.");
+            detail.setText("Blocking is on. Uninstall, force-stop, battery, Safe Mode, extra users, and USB debugging are locked. Authenticator required to disarm.");
         } else if (armed) {
-            status.setText("WAITING FOR DEVICE OWNER");
-            status.setTextColor(0xFFFFA000);
-            detail.setText("Blocking stays off until Zero Reel is Device Owner.");
+            status.setText("ARMED");
+            status.setTextColor(0xFF2E7D32);
+            detail.setText("Blocking is on. Device Owner is optional and adds the strongest uninstall and battery lock.");
         } else {
             status.setText("DISARMED");
             status.setTextColor(0xFFFF5722);
@@ -196,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ((TextView) findViewById(R.id.text_blocks_today)).setText(String.valueOf(UsageStore.blocksToday(this)));
+        refreshUrgeCounts();
         long allowedMin = UsageStore.allowedMsToday(this) / 60000L;
         int limit = Prefs.dailyLimitMinutes(this);
         ((TextView) findViewById(R.id.text_allowed_today)).setText(
@@ -204,23 +195,24 @@ public class MainActivity extends AppCompatActivity {
 
         setChip(R.id.text_access_chip, access,
                 AccessibilityKeeper.canRestore(this) ? "Accessibility locked" : "Accessibility");
-        setChip(R.id.text_admin_chip, ProtectLock.ready(this), "Device Owner");
+        setChip(R.id.text_admin_chip, ProtectLock.ready(this) || admin,
+                ProtectLock.ready(this) ? "Max lock" : "Uninstall lock");
         setChip(R.id.text_battery_chip, ProtectLock.isDeviceOwner(this) || DeviceStatus.batteryUnrestricted(this),
                 ProtectLock.isDeviceOwner(this) ? "Battery locked" : "Battery");
 
         TextView strict = findViewById(R.id.text_strict_status);
         if (ProtectLock.ready(this)) {
-            strict.setText("Device Owner policies are on. You can add Google accounts back. Disarm with an authenticator code.");
+            strict.setText("Max lock is on. Uninstall, Accessibility, Safe Mode, extra users, and battery limits stay locked. Disarm with an authenticator code.");
             strict.setTextColor(0xFF2E7D32);
         } else if (ProtectLock.isDeviceOwner(this)) {
-            strict.setText("Device Owner is set. Run the WRITE_SECURE_SETTINGS grant so Accessibility stays on.");
+            strict.setText("Device Owner is set. Run the WRITE_SECURE_SETTINGS grant so Accessibility stays locked on.");
             strict.setTextColor(0xFFFFA000);
         } else if (admin) {
-            strict.setText("Device Owner is required. Regular device admin is not enough.");
-            strict.setTextColor(0xFFC62828);
+            strict.setText("Blocking already works. Device Owner is optional and is the strongest self-control lock: Uninstall disabled, Accessibility locked, Safe Mode and extra users blocked.");
+            strict.setTextColor(0xFF1565C0);
         } else {
-            strict.setText("Device Owner is required before Zero Reel will block Reels.");
-            strict.setTextColor(0xFFC62828);
+            strict.setText("Blocking already works. Turn on uninstall protection, then optionally add Device Owner for the strongest lock.");
+            strict.setTextColor(0xFF1565C0);
         }
 
         ((SwitchMaterial) findViewById(R.id.switch_youtube)).setChecked(Prefs.platformEnabled(this, Prefs.APP_YOUTUBE, true));
@@ -229,6 +221,20 @@ public class MainActivity extends AppCompatActivity {
         ((SwitchMaterial) findViewById(R.id.switch_facebook)).setChecked(Prefs.platformEnabled(this, Prefs.APP_FACEBOOK, true));
         ((SwitchMaterial) findViewById(R.id.switch_snapchat)).setChecked(Prefs.platformEnabled(this, Prefs.APP_SNAPCHAT, true));
         ((SwitchMaterial) findViewById(R.id.switch_debug)).setChecked(Prefs.debugLog(this));
+    }
+
+    private void refreshUrgeCounts() {
+        setUrgeRow(R.id.text_urge_youtube, BlockRules.Platform.YOUTUBE);
+        setUrgeRow(R.id.text_urge_instagram, BlockRules.Platform.INSTAGRAM);
+        setUrgeRow(R.id.text_urge_tiktok, BlockRules.Platform.TIKTOK);
+        setUrgeRow(R.id.text_urge_facebook, BlockRules.Platform.FACEBOOK);
+        setUrgeRow(R.id.text_urge_snapchat, BlockRules.Platform.SNAPCHAT);
+        ((TextView) findViewById(R.id.text_urge_total)).setText(
+                UsageStore.urgesTotalAll(this) + "  ·  " + UsageStore.blocksToday(this) + " today");
+    }
+
+    private void setUrgeRow(int id, BlockRules.Platform platform) {
+        ((TextView) findViewById(id)).setText(UsageStore.formatAppCount(this, platform));
     }
 
     private void setChip(int id, boolean ok, String label) {

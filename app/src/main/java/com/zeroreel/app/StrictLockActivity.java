@@ -62,6 +62,7 @@ public class StrictLockActivity extends AppCompatActivity {
                 Toast.makeText(this, "Still waiting for Device Owner.", Toast.LENGTH_SHORT).show();
             }
         });
+        findViewById(R.id.btn_skip_owner).setOnClickListener(v -> completeAndOpenMain());
         refresh();
     }
 
@@ -82,16 +83,7 @@ public class StrictLockActivity extends AppCompatActivity {
         if (finishing) return;
         finishing = true;
         ProtectLock.apply(this);
-        Prefs.get(this).edit()
-                .putBoolean(Prefs.SETUP_COMPLETE, true)
-                .putBoolean(Prefs.LOCK_ARMED, true)
-                .putBoolean(Prefs.MASTER_ENABLED, true)
-                .putBoolean(Prefs.APP_YOUTUBE, true)
-                .putBoolean(Prefs.APP_INSTAGRAM, true)
-                .putBoolean(Prefs.APP_TIKTOK, true)
-                .putBoolean(Prefs.APP_FACEBOOK, true)
-                .putBoolean(Prefs.APP_SNAPCHAT, true)
-                .apply();
+        Prefs.completeAndArm(this);
         BlockGuardService.start(this);
         startActivity(new Intent(this, MainActivity.class));
         finish();
@@ -120,15 +112,17 @@ public class StrictLockActivity extends AppCompatActivity {
             command.setTextColor(0xFF2E7D32);
             findViewById(R.id.btn_add_account).setVisibility(View.VISIBLE);
             findViewById(R.id.btn_apply_now).setVisibility(View.VISIBLE);
+            findViewById(R.id.btn_skip_owner).setVisibility(View.GONE);
         } else {
-            status.setText("Android only accepts Device Owner after Google accounts are removed from this phone. This screen updates itself after the command succeeds.");
-            status.setTextColor(0xFFC62828);
+            status.setText("Optional strongest lock. Blocking already works without this. Android only accepts Device Owner after Google accounts are removed. This screen updates itself after the command succeeds.");
+            status.setTextColor(0xFF1565C0);
             accounts.setText("1. Remove Google accounts on this phone (temporary).");
             accounts.setTextColor(0xFFC62828);
             debug.setText("2. Turn on USB debugging or Wireless debugging.");
             command.setText("3. Waiting for the command…");
             findViewById(R.id.btn_add_account).setVisibility(View.GONE);
             findViewById(R.id.btn_apply_now).setVisibility(View.GONE);
+            findViewById(R.id.btn_skip_owner).setVisibility(View.VISIBLE);
         }
     }
 

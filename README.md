@@ -6,14 +6,16 @@ AntiScroll is kept only as the source of YouTube Shorts and Instagram Reels view
 
 ## What this is
 
-A **visible** app on your phone. You install it, add a TOTP secret to an authenticator app, turn on Accessibility and Device Admin, then arm it.
+A **visible** app on your phone. You install it, add a TOTP secret to an authenticator app, turn on Accessibility, then arm it.
 
 Once armed:
 
+- Blocking works immediately (Device Owner is **not** required)
 - A foreground service and boot receiver start protection after restart
-- Regular device admin only adds an extra Settings tap (uninstall is still easy)
-- **Strict uninstall lock** (Android Device Owner) disables the Uninstall button until you disarm with an authenticator code
+- Regular device admin adds an extra Settings tap before uninstall
+- **Optional max lock** (Android Device Owner) disables Uninstall, locks Accessibility on, and blocks Safe Mode / extra users / force-stop until you disarm with an authenticator code
 - Authenticator code is required inside Zero Reel to pause, change the block list, or disarm
+- The dashboard counts how many urges were restricted from each app (lifetime + today)
 
 ## What this is not
 
@@ -36,7 +38,7 @@ Added in Zero Reel:
 - Snapchat Spotlight only (`spotlight_container`; Camera, Chat, and Stories stay open)
 - Instagram / Snapchat / Facebook send you to chat or messages instead of closing the app
 - Daily allowance (off / 5 / 15 / 30 minutes) before hard block
-- Blocks-today counter
+- Per-app urge counters (lifetime and today)
 - 5-minute pause (authenticator required)
 - Debug log in app storage
 
@@ -44,17 +46,24 @@ Normal YouTube videos, Instagram posts, Facebook feed, and Snapchat chat are not
 
 ## Setup
 
-Zero Reel will not arm until it is Device Owner.
+1. Install the APK.
+2. Add the secret to Google Authenticator or Authy and confirm a 6-digit code.
+3. Turn on the Zero Reel accessibility service.
+4. Optionally turn on uninstall protection and battery exemption.
+5. Tap **Arm Zero Reel**. Blocking starts.
 
-1. Install the APK and finish authenticator + Accessibility + device admin.
-2. Remove Google accounts from the phone (temporary).
-3. On the Device Owner screen, tap **Copy the one command** and paste it once:
+### Optional strongest lock (Device Owner)
+
+This is not required for blocking. It is the strongest self-control setting Android allows:
+
+1. Remove Google accounts from the phone (temporary).
+2. On the Device Owner screen, tap **Copy the one command** and paste it once:
 
 ```
 adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver && adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS && adb shell dumpsys deviceidle whitelist +com.zeroreel.app
 ```
 
-4. The app notices Device Owner by itself. Tap **Sign back into Google**, then **Open Zero Reel**.
+3. The app notices Device Owner by itself. Tap **Sign back into Google**, then **Open Zero Reel**.
 
 That locks uninstall, force-stop, battery limits, Safe Mode, extra users, and USB debugging. Accessibility is turned back on if you switch it off.
 
@@ -62,4 +71,4 @@ To uninstall later: **Disarm and allow uninstall** with a valid authenticator co
 
 ## License
 
-GPL-3.0. YouTube Shorts and Instagram Reels signatures come from [yadavnikhil03/AntiScroll](https://github.com/yadavnikhil03/AntiScroll).
+GPL-3.0. YouTube Shorts and Instagram Reels signatures come from [yadavnikhil03/AntiScroll](https://github.com/yadavnikhil03/AntiScroll). Facebook Reels content-description rules and the Snapchat Spotlight view ID follow [duartebarbosadev/Scrolless](https://github.com/duartebarbosadev/Scrolless).

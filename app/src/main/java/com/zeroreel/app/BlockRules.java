@@ -10,20 +10,22 @@ package com.zeroreel.app;
 final class BlockRules {
 
     enum Platform {
-        YOUTUBE(Prefs.APP_YOUTUBE, true, false),
-        INSTAGRAM(Prefs.APP_INSTAGRAM, true, false),
-        TIKTOK(Prefs.APP_TIKTOK, true, true),
-        FACEBOOK(Prefs.APP_FACEBOOK, true, false),
-        SNAPCHAT(Prefs.APP_SNAPCHAT, true, false);
+        YOUTUBE(Prefs.APP_YOUTUBE, true, false, "YouTube Shorts"),
+        INSTAGRAM(Prefs.APP_INSTAGRAM, true, false, "Instagram Reels"),
+        TIKTOK(Prefs.APP_TIKTOK, true, true, "TikTok"),
+        FACEBOOK(Prefs.APP_FACEBOOK, true, false, "Facebook Reels"),
+        SNAPCHAT(Prefs.APP_SNAPCHAT, true, false, "Snapchat Spotlight");
 
         final String prefKey;
         final boolean defaultEnabled;
         final boolean blockEntireApp;
+        final String label;
 
-        Platform(String prefKey, boolean defaultEnabled, boolean blockEntireApp) {
+        Platform(String prefKey, boolean defaultEnabled, boolean blockEntireApp, String label) {
             this.prefKey = prefKey;
             this.defaultEnabled = defaultEnabled;
             this.blockEntireApp = blockEntireApp;
+            this.label = label;
         }
     }
 
