@@ -19,14 +19,7 @@ Once armed:
 
 Zero Reel is **not** a hidden or undeletable program. Android does not allow an app to hide itself from Settings or survive every removal path.
 
-These still work, by design:
-
-- Factory reset
-- `adb uninstall`
-- Turning off Accessibility in system settings
-- Deactivating device admin from Android Settings (the app warns you first)
-
-Those limits are intentional. A secretly undeletable app would be malware.
+Factory reset still wipes the phone. That is intentional so you cannot get permanently locked out.
 
 ## What gets blocked
 
@@ -50,23 +43,21 @@ Normal YouTube videos, Instagram posts, Facebook feed, and Snapchat chat are not
 
 ## Setup
 
-1. Open the project in Android Studio and install it on a phone (Android 8+).
-2. Add the shown secret to an authenticator app and confirm a live code.
-3. Enable **Zero Reel** in Accessibility settings.
-4. Enable **uninstall protection** (device admin). This does not wipe data or hide the app.
-5. Optionally ignore battery optimizations so OEMs do not kill the service.
-6. Tap **Arm Zero Reel**.
+Zero Reel will not arm until it is Device Owner.
 
-Stay signed in (recommended). Android will not set Device Owner while a Google account is on the phone, so this path does not remove accounts:
+1. Install the APK and finish authenticator + Accessibility + device admin.
+2. Remove Google accounts from the phone (temporary).
+3. Run:
 
 ```
+adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver
 adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS
 adb shell dumpsys deviceidle whitelist +com.zeroreel.app
 ```
 
-That keeps Accessibility on and helps battery. Uninstall is still possible.
+4. Tap **Apply Device Owner lock**, then add the same Google account back.
 
-Device Owner is optional and signs you out on the phone until you sign back in.
+That locks uninstall, force-stop, battery limits, Safe Mode, extra users, and USB debugging. Accessibility is turned back on if you switch it off.
 
 To uninstall later: **Disarm and allow uninstall** with a valid authenticator code, then uninstall from Settings. Factory reset still wipes the phone.
 

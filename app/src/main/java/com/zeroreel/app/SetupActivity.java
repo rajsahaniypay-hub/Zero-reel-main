@@ -103,12 +103,8 @@ public class SetupActivity extends AppCompatActivity {
 
     private void refreshStatus() {
         setStatus(R.id.text_access_status, DeviceStatus.accessibilityEnabled(this), "Accessibility on", "Accessibility off");
-        if (DeviceStatus.strictUninstallLock(this)) {
-            setStatus(R.id.text_admin_status, true, "Strict uninstall lock on", "Uninstall protection off");
-        } else {
-            setStatus(R.id.text_admin_status, DeviceStatus.adminActive(this),
-                    "Weak lock on (Settings can still uninstall)", "Uninstall protection off");
-        }
+        setStatus(R.id.text_admin_status, ProtectLock.ready(this),
+                "Device Owner ready", "Device Owner required");
         setStatus(R.id.text_battery_status, DeviceStatus.batteryUnrestricted(this), "Battery unrestricted", "Battery may kill the service");
     }
 
@@ -137,7 +133,11 @@ public class SetupActivity extends AppCompatActivity {
             return;
         }
         if (!DeviceStatus.adminActive(this)) {
-            Toast.makeText(this, "Enable uninstall protection first.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Enable device admin first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (!ProtectLock.ready(this)) {
+            startActivity(new Intent(this, StrictLockActivity.class));
             return;
         }
 
@@ -151,6 +151,7 @@ public class SetupActivity extends AppCompatActivity {
                 .putBoolean(Prefs.APP_FACEBOOK, true)
                 .putBoolean(Prefs.APP_SNAPCHAT, true)
                 .apply();
+        ProtectLock.apply(this);
         BlockGuardService.start(this);
         startActivity(new Intent(this, MainActivity.class));
         finish();

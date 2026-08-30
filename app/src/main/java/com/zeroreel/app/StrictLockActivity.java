@@ -16,41 +16,49 @@ public class StrictLockActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_strict_lock);
 
-        ((TextView) findViewById(R.id.text_stay_commands)).setText(StaySignedIn.bothCommands(this));
-        ((TextView) findViewById(R.id.text_adb_command)).setText(ProtectLock.adbCommand(this));
+        ((TextView) findViewById(R.id.text_required_commands)).setText(ProtectLock.requiredCommands(this));
+
+        findViewById(R.id.btn_open_accounts).setOnClickListener(v ->
+                startSafe(new Intent(Settings.ACTION_SYNC_SETTINGS),
+                        "Remove Google accounts on this phone, then run the commands. Add them back after."));
 
         findViewById(R.id.btn_open_developer).setOnClickListener(v ->
                 startSafe(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS),
                         "Turn on USB debugging or Wireless debugging."));
 
-        findViewById(R.id.btn_copy_stay).setOnClickListener(v -> copy(
-                "Zero Reel stay signed in",
-                StaySignedIn.bothCommands(this),
-                "Commands copied. Run both. You do not need to remove Google accounts."));
+        findViewById(R.id.btn_copy_required).setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel device owner", ProtectLock.requiredCommands(this)));
+            Toast.makeText(this, "Copied all three commands. Run them in order.", Toast.LENGTH_LONG).show();
+        });
 
         findViewById(R.id.btn_apply_now).setOnClickListener(v -> {
-            AccessibilityKeeper.restoreIfAllowed(this);
-            boolean deviceOwner = ProtectLock.apply(this);
-            if (deviceOwner) {
-                Toast.makeText(this, "Device Owner lock is on.", Toast.LENGTH_LONG).show();
-            } else if (StaySignedIn.ready(this)) {
-                Toast.makeText(this, "Stay-signed-in lock is on. Accessibility will turn back on. Uninstall is still possible.", Toast.LENGTH_LONG).show();
+            if (!ProtectLock.isDeviceOwner(this)) {
+                Toast.makeText(this, "Device Owner is required. Remove Google accounts and run the first command.", Toast.LENGTH_LONG).show();
+                refresh();
+                return;
+            }
+            if (!AccessibilityKeeper.canRestore(this)) {
+                Toast.makeText(this, "Device Owner is set. Run the WRITE_SECURE_SETTINGS grant next.", Toast.LENGTH_LONG).show();
+                ProtectLock.apply(this);
+                refresh();
+                return;
+            }
+            if (ProtectLock.apply(this)) {
+                completeAndOpenMain();
             } else {
-                Toast.makeText(this, "Run the two stay-signed-in commands first. Do not remove your Google account for this path.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Could not apply Device Owner policies. Run the commands again.", Toast.LENGTH_LONG).show();
             }
             refresh();
         });
 
-        findViewById(R.id.btn_open_accounts).setOnClickListener(v ->
-                startSafe(new Intent(Settings.ACTION_SYNC_SETTINGS),
-                        "Only do this if you accept signing out on this phone."));
-
-        findViewById(R.id.btn_copy_command).setOnClickListener(v -> copy(
-                "Zero Reel device owner",
-                ProtectLock.adbCommand(this),
-                "Copied. This command fails while a Google account is still on the phone."));
-
-        findViewById(R.id.btn_done).setOnClickListener(v -> finish());
+        findViewById(R.id.btn_done).setOnClickListener(v -> {
+            if (ProtectLock.ready(this)) {
+                completeAndOpenMain();
+            } else {
+                Toast.makeText(this, "Zero Reel needs Device Owner before it will arm.", Toast.LENGTH_LONG).show();
+            }
+        });
         refresh();
     }
 
@@ -58,32 +66,42 @@ public class StrictLockActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refresh();
+        if (ProtectLock.ready(this) && Prefs.setupComplete(this)) {
+            ProtectLock.apply(this);
+        }
+    }
+
+    private void completeAndOpenMain() {
+        Prefs.get(this).edit()
+                .putBoolean(Prefs.SETUP_COMPLETE, true)
+                .putBoolean(Prefs.LOCK_ARMED, true)
+                .putBoolean(Prefs.MASTER_ENABLED, true)
+                .putBoolean(Prefs.APP_YOUTUBE, true)
+                .putBoolean(Prefs.APP_INSTAGRAM, true)
+                .putBoolean(Prefs.APP_TIKTOK, true)
+                .putBoolean(Prefs.APP_FACEBOOK, true)
+                .putBoolean(Prefs.APP_SNAPCHAT, true)
+                .apply();
+        BlockGuardService.start(this);
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
     }
 
     private void refresh() {
         TextView status = findViewById(R.id.text_lock_status);
-        if (DeviceStatus.strictUninstallLock(this) && AccessibilityKeeper.canRestore(this)) {
-            status.setText("Full lock on. Uninstall, battery, and Accessibility are protected.");
+        if (ProtectLock.ready(this)) {
+            status.setText("Device Owner and best settings are on. You can add Google accounts back now.");
             status.setTextColor(0xFF2E7D32);
-        } else if (StaySignedIn.ready(this) && DeviceStatus.strictUninstallLock(this)) {
-            status.setText("Device Owner is on. Run the stay-signed-in grant if Accessibility can still be turned off.");
-            status.setTextColor(0xFF2E7D32);
-        } else if (StaySignedIn.ready(this)) {
-            status.setText("Stay-signed-in lock is on. You are still logged into Google. Uninstall is still possible from Settings.");
-            status.setTextColor(0xFF2E7D32);
+        } else if (ProtectLock.isDeviceOwner(this) && AccessibilityKeeper.canRestore(this)) {
+            status.setText("Almost ready. Tap apply lock.");
+            status.setTextColor(0xFFFFA000);
         } else if (ProtectLock.isDeviceOwner(this)) {
-            status.setText("Device Owner is set. Tap check lock to apply uninstall blocking.");
+            status.setText("Device Owner is set. Run the grant command so Accessibility stays on.");
             status.setTextColor(0xFFFFA000);
         } else {
-            status.setText("Use the stay-signed-in commands. You do not need to log out of Google for that.");
+            status.setText("Device Owner is required. Android will reject the first command until Google accounts are removed from this phone.");
             status.setTextColor(0xFFC62828);
         }
-    }
-
-    private void copy(String label, String text, String toast) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        clipboard.setPrimaryClip(ClipData.newPlainText(label, text));
-        Toast.makeText(this, toast, Toast.LENGTH_LONG).show();
     }
 
     private void startSafe(Intent intent, String fallback) {

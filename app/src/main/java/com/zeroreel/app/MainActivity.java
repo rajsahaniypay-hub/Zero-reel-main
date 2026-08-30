@@ -28,6 +28,11 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+        if (!ProtectLock.ready(this)) {
+            startActivity(new Intent(this, StrictLockActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_main);
 
         if (Prefs.masterEnabled(this)) {
@@ -99,18 +104,14 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_copy_adb).setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel stay signed in", StaySignedIn.bothCommands(this)));
-            Toast.makeText(this, "Copied. These commands do not sign you out of Google.", Toast.LENGTH_LONG).show();
+            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel device owner", ProtectLock.requiredCommands(this)));
+            Toast.makeText(this, "Copied the Device Owner commands.", Toast.LENGTH_LONG).show();
         });
         findViewById(R.id.btn_apply_strict).setOnClickListener(v -> {
-            AccessibilityKeeper.restoreIfAllowed(this);
-            boolean owner = ProtectLock.apply(this);
-            if (owner) {
-                Toast.makeText(this, "Device Owner lock is on.", Toast.LENGTH_LONG).show();
-            } else if (StaySignedIn.ready(this)) {
-                Toast.makeText(this, "Stay-signed-in lock is on. You are still logged into Google.", Toast.LENGTH_LONG).show();
+            if (ProtectLock.apply(this) && ProtectLock.ready(this)) {
+                Toast.makeText(this, "Device Owner policies are on.", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "Open Stay signed in setup. You do not need to remove your Google account.", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(this, StrictLockActivity.class));
             }
             refresh();
         });
@@ -135,6 +136,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!ProtectLock.ready(this)) {
+            startActivity(new Intent(this, StrictLockActivity.class));
+            finish();
+            return;
+        }
+        ProtectLock.apply(this);
         refresh();
     }
 
@@ -174,18 +181,14 @@ public class MainActivity extends AppCompatActivity {
             status.setText("PAUSED");
             status.setTextColor(0xFFFFA000);
             detail.setText("Blocking resumes in " + Math.max(1, Prefs.pauseRemainingMs(this) / 60000L) + " min.");
-        } else if (armed && DeviceStatus.strictUninstallLock(this)) {
-            status.setText("ARMED · STRICT LOCK");
+        } else if (armed && ProtectLock.ready(this)) {
+            status.setText("ARMED · DEVICE OWNER");
             status.setTextColor(0xFF2E7D32);
-            if (AccessibilityKeeper.canRestore(this)) {
-                detail.setText("Uninstall and battery settings are locked. Accessibility turns back on if you switch it off.");
-            } else {
-                detail.setText("Uninstall and battery settings are locked. Run the Accessibility lock command to keep Accessibility on.");
-            }
+            detail.setText("Uninstall, force-stop, battery, Safe Mode, extra users, and USB debugging are locked. Authenticator required to disarm.");
         } else if (armed) {
-            status.setText("ARMED");
-            status.setTextColor(0xFF2E7D32);
-            detail.setText("Blocking stays on after restart. Strict lock is still off, so Settings can disable Accessibility and uninstall.");
+            status.setText("WAITING FOR DEVICE OWNER");
+            status.setTextColor(0xFFFFA000);
+            detail.setText("Blocking stays off until Zero Reel is Device Owner.");
         } else {
             status.setText("DISARMED");
             status.setTextColor(0xFFFF5722);
@@ -201,25 +204,22 @@ public class MainActivity extends AppCompatActivity {
 
         setChip(R.id.text_access_chip, access,
                 AccessibilityKeeper.canRestore(this) ? "Accessibility locked" : "Accessibility");
-        setChip(R.id.text_admin_chip, DeviceStatus.strictUninstallLock(this), "Strict lock");
-        setChip(R.id.text_battery_chip, DeviceStatus.strictUninstallLock(this) || DeviceStatus.batteryUnrestricted(this),
-                DeviceStatus.strictUninstallLock(this) ? "Battery locked" : "Battery");
+        setChip(R.id.text_admin_chip, ProtectLock.ready(this), "Device Owner");
+        setChip(R.id.text_battery_chip, ProtectLock.isDeviceOwner(this) || DeviceStatus.batteryUnrestricted(this),
+                ProtectLock.isDeviceOwner(this) ? "Battery locked" : "Battery");
 
         TextView strict = findViewById(R.id.text_strict_status);
-        if (DeviceStatus.strictUninstallLock(this) && AccessibilityKeeper.canRestore(this)) {
-            strict.setText("Full lock on. Uninstall, battery, and Accessibility stay protected.");
+        if (ProtectLock.ready(this)) {
+            strict.setText("Device Owner policies are on. You can add Google accounts back. Disarm with an authenticator code.");
             strict.setTextColor(0xFF2E7D32);
-        } else if (StaySignedIn.ready(this)) {
-            strict.setText("Stay-signed-in lock on. You kept your Google accounts. Uninstall is still possible unless you later accept Device Owner sign-out.");
-            strict.setTextColor(0xFF2E7D32);
-        } else if (DeviceStatus.strictUninstallLock(this)) {
-            strict.setText("Uninstall and battery are locked. Run the stay-signed-in grant to keep Accessibility on.");
+        } else if (ProtectLock.isDeviceOwner(this)) {
+            strict.setText("Device Owner is set. Run the WRITE_SECURE_SETTINGS grant so Accessibility stays on.");
             strict.setTextColor(0xFFFFA000);
         } else if (admin) {
-            strict.setText("Weak lock only. Settings can still deactivate device admin, then uninstall. Run the Device Owner command to make uninstall hard.");
+            strict.setText("Device Owner is required. Regular device admin is not enough.");
             strict.setTextColor(0xFFC62828);
         } else {
-            strict.setText("No uninstall lock. Enable device admin, then apply strict lock.");
+            strict.setText("Device Owner is required before Zero Reel will block Reels.");
             strict.setTextColor(0xFFC62828);
         }
 

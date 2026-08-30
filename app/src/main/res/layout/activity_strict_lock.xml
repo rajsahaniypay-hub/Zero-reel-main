@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stay signed in"
+            android:text="Device Owner required"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:lineSpacingMultiplier="1.35"
-            android:text="Recommended. You keep every Google account. Android will not allow Device Owner while you are signed in, so this path locks Accessibility and battery without signing you out."
+            android:text="Zero Reel will not arm until it is Device Owner. That is the only official way to lock Uninstall, force-stop, and battery. Android requires that no Google account is on the phone for the first command. Add the same account back after the lock is on."
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp" />
 
@@ -40,16 +40,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="1. Turn on debugging"
+            android:text="1. Remove Google accounts"
             android:textStyle="bold" />
 
-        <TextView
+        <Button
+            android:id="@+id/btn_open_accounts"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="USB debugging on a computer, or Wireless debugging plus an ADB app on this phone (aShell or LADB)."
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp" />
+            android:layout_marginTop="8dp"
+            android:text="Open Accounts" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="2. Turn on debugging"
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btn_open_developer"
@@ -63,11 +70,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="2. Run these two commands"
+            android:text="3. Run all three commands"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/text_stay_commands"
+            android:id="@+id/text_required_commands"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -78,68 +85,23 @@
             android:textSize="13sp" />
 
         <Button
-            android:id="@+id/btn_copy_stay"
+            android:id="@+id/btn_copy_required"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Copy stay-signed-in commands" />
+            android:text="Copy required commands" />
 
         <Button
             android:id="@+id/btn_apply_now"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="I ran them — check lock" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="Optional: block uninstall"
-            android:textAllCaps="true"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="12sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:lineSpacingMultiplier="1.35"
-            android:text="This is Device Owner. Android requires that no Google account is on the phone, so you will be signed out here until you sign back in. Skip this if you want to stay signed in."
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp" />
-
-        <Button
-            android:id="@+id/btn_open_accounts"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open Accounts (only if you accept sign-out)" />
-
-        <TextView
-            android:id="@+id/text_adb_command"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="?attr/colorButtonNormal"
-            android:fontFamily="monospace"
-            android:padding="12dp"
-            android:textIsSelectable="true"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/btn_copy_command"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Copy Device Owner command" />
+            android:text="Apply Device Owner lock" />
 
         <Button
             android:id="@+id/btn_done"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Back" />
+            android:text="Continue" />
     </LinearLayout>
 </ScrollView>

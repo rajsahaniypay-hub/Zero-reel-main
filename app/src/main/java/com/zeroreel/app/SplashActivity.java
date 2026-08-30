@@ -12,7 +12,14 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            Class<?> next = Prefs.setupComplete(this) ? MainActivity.class : SetupActivity.class;
+            Class<?> next;
+            if (!Prefs.setupComplete(this)) {
+                next = SetupActivity.class;
+            } else if (!ProtectLock.ready(this)) {
+                next = StrictLockActivity.class;
+            } else {
+                next = MainActivity.class;
+            }
             startActivity(new Intent(this, next));
             finish();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

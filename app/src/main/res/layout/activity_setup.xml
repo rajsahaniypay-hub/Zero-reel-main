@@ -144,7 +144,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Arm Zero Reel"
+            android:text="Continue to Device Owner"
             app:cornerRadius="12dp" />
     </LinearLayout>
 </ScrollView>

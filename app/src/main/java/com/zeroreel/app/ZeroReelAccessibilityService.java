@@ -47,7 +47,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null || event.getPackageName() == null) return;
-        if (!Prefs.masterEnabled(this) || Prefs.isPaused(this)) return;
+        if (!Prefs.masterEnabled(this) || Prefs.isPaused(this) || !ProtectLock.isDeviceOwner(this)) return;
 
         String packageName = event.getPackageName().toString();
         if (packageName.equals(getPackageName())) return;

@@ -133,14 +133,17 @@ public class BlockGuardService extends Service {
         String channel = CHANNEL_ID;
         if (Prefs.isPaused(this)) {
             text = getString(R.string.guard_paused);
+        } else         if (!ProtectLock.isDeviceOwner(this)) {
+            text = "Device Owner is required. Blocking is paused until Zero Reel is Device Owner.";
+            channel = ALERT_CHANNEL_ID;
         } else if (!accessOn && AccessibilityKeeper.canRestore(this)) {
             text = "Accessibility was turned off. Zero Reel is turning it back on.";
             channel = ALERT_CHANNEL_ID;
         } else if (!accessOn) {
             text = "Accessibility is off. Blocking is stopped. Tap to turn it back on.";
             channel = ALERT_CHANNEL_ID;
-        } else if (DeviceStatus.strictUninstallLock(this)) {
-            text = "Strict lock on. Battery restriction is locked. Authenticator required to disarm.";
+        } else if (ProtectLock.ready(this)) {
+            text = "Device Owner lock on. Uninstall, battery, Safe Mode, and extra users are locked.";
         } else {
             text = getString(R.string.guard_active);
         }
