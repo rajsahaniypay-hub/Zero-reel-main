@@ -111,11 +111,7 @@ public class MainActivity extends AppCompatActivity {
             refresh();
         });
         findViewById(R.id.btn_strict_help).setOnClickListener(v ->
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.strict_lock_title)
-                        .setMessage(R.string.strict_lock_help)
-                        .setPositiveButton("OK", null)
-                        .show());
+                startActivity(new Intent(this, StrictLockActivity.class)));
 
         findViewById(R.id.btn_disarm).setOnClickListener(v ->
                 UnlockHelper.confirm(this, "Disarm Zero Reel",

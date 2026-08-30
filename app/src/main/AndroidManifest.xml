@@ -35,6 +35,10 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".StrictLockActivity"
+            android:exported="false" />
+
         <service
             android:name=".ZeroReelAccessibilityService"
             android:exported="false"

@@ -57,13 +57,21 @@ Normal YouTube videos, Instagram posts, Facebook feed, and Snapchat chat are not
 5. Optionally ignore battery optimizations so OEMs do not kill the service.
 6. Tap **Arm Zero Reel**.
 
-To make uninstall hard, run this from a computer after the app is installed:
+There is no one-tap “make Device Owner” button. Android blocks that while a Google account is on the phone.
+
+Easiest official path, also in the app under **Easier Device Owner setup**:
+
+1. Remove Google accounts from the phone.
+2. Turn on USB debugging (computer) or Wireless debugging (paste the command in aShell/LADB on the phone — no computer needed).
+3. Run:
 
 ```
 adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver
 ```
 
-Then open Zero Reel and tap **Apply strict lock**. If the command fails, the phone already has a Device Owner or still has Google accounts; remove accounts or use a test phone.
+4. Tap **I ran it — apply lock**, then add the accounts back.
+
+If the command fails, an account is still on the phone or another Device Owner already exists.
 
 To uninstall later: **Disarm and allow uninstall** with a valid authenticator code, then uninstall from Settings. Factory reset still wipes the phone.
 
