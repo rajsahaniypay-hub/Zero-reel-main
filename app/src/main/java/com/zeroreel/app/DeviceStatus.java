@@ -52,13 +52,9 @@ final class DeviceStatus {
         }
         if (Build.VERSION.SDK_INT >= 30) {
             try {
-                return Settings.Global.getInt(context.getContentResolver(), Settings.Global.ADB_WIFI_ENABLED, 0) == 1;
+                return Settings.Global.getInt(context.getContentResolver(), "adb_wifi_enabled", 0) == 1;
             } catch (Exception ignored) {
-                try {
-                    return Settings.Global.getInt(context.getContentResolver(), "adb_wifi_enabled", 0) == 1;
-                } catch (Exception ignoredToo) {
-                    return false;
-                }
+                return false;
             }
         }
         return false;
