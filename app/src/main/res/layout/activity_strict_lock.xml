@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Easier Device Owner setup"
+            android:text="Stay signed in"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:lineSpacingMultiplier="1.35"
-            android:text="Your Google password is not changed. Removing the account only signs you out on this phone so Android will accept the Device Owner command. After the lock is on, add the same account back and you stay signed in."
+            android:text="Recommended. You keep every Google account. Android will not allow Device Owner while you are signed in, so this path locks Accessibility and battery without signing you out."
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp" />
 
@@ -40,37 +40,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="1. Remove Google accounts"
+            android:text="1. Turn on debugging"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Temporary only. You will sign out of Gmail and Play on this phone, then sign back in at step 5. Your photos and mail stay in the account."
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp" />
-
-        <Button
-            android:id="@+id/btn_open_accounts"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open Accounts" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="2. Turn on debugging"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="USB debugging if you have a computer. Wireless debugging if you will paste the command in an ADB app on this phone, such as aShell or LADB. No computer is required for that path."
+            android:text="USB debugging on a computer, or Wireless debugging plus an ADB app on this phone (aShell or LADB)."
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="13sp" />
 
@@ -86,8 +63,58 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="3. Run this command"
+            android:text="2. Run these two commands"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_stay_commands"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="?attr/colorButtonNormal"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:textIsSelectable="true"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btn_copy_stay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Copy stay-signed-in commands" />
+
+        <Button
+            android:id="@+id/btn_apply_now"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="I ran them — check lock" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="Optional: block uninstall"
+            android:textAllCaps="true"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:lineSpacingMultiplier="1.35"
+            android:text="This is Device Owner. Android requires that no Google account is on the phone, so you will be signed out here until you sign back in. Skip this if you want to stay signed in."
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btn_open_accounts"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Open Accounts (only if you accept sign-out)" />
 
         <TextView
             android:id="@+id/text_adb_command"
@@ -98,62 +125,15 @@
             android:fontFamily="monospace"
             android:padding="12dp"
             android:textIsSelectable="true"
-            android:textSize="13sp" />
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/btn_copy_command"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Copy command" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="4. Optional: lock Accessibility"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Android always lets you tap Accessibility off. This extra command lets Zero Reel turn it back on. Battery restrictions are locked automatically after Device Owner."
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp" />
-
-        <TextView
-            android:id="@+id/text_grant_command"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="?attr/colorButtonNormal"
-            android:fontFamily="monospace"
-            android:padding="12dp"
-            android:textIsSelectable="true"
-            android:textSize="13sp" />
-
-        <Button
-            android:id="@+id/btn_copy_grant"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Copy Accessibility lock command" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="5. Apply lock, then add accounts back"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/btn_apply_now"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="I ran it — apply lock" />
+            android:text="Copy Device Owner command" />
 
         <Button
             android:id="@+id/btn_done"

@@ -57,22 +57,16 @@ Normal YouTube videos, Instagram posts, Facebook feed, and Snapchat chat are not
 5. Optionally ignore battery optimizations so OEMs do not kill the service.
 6. Tap **Arm Zero Reel**.
 
-There is no one-tap “make Device Owner” button. Android blocks that while a Google account is on the phone.
-
-Easiest official path, also in the app under **Easier Device Owner setup**:
-
-1. Remove Google accounts from the phone.
-2. Turn on USB debugging (computer) or Wireless debugging (paste the command in aShell/LADB on the phone — no computer needed).
-3. Run:
+Stay signed in (recommended). Android will not set Device Owner while a Google account is on the phone, so this path does not remove accounts:
 
 ```
-adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver
+adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS
+adb shell dumpsys deviceidle whitelist +com.zeroreel.app
 ```
 
-4. Optional, to keep Accessibility on: `adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS`
-5. Tap **I ran it — apply lock**, then add the same Google account back. That only signed you out on the phone; your password is unchanged.
+That keeps Accessibility on and helps battery. Uninstall is still possible.
 
-If the command fails, an account is still on the phone or another Device Owner already exists.
+Device Owner is optional and signs you out on the phone until you sign back in.
 
 To uninstall later: **Disarm and allow uninstall** with a valid authenticator code, then uninstall from Settings. Factory reset still wipes the phone.
 

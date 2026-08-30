@@ -99,14 +99,18 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_copy_adb).setOnClickListener(v -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel device owner", ProtectLock.adbCommand(this)));
-            Toast.makeText(this, "Command copied. Run it from a computer with USB debugging.", Toast.LENGTH_LONG).show();
+            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel stay signed in", StaySignedIn.bothCommands(this)));
+            Toast.makeText(this, "Copied. These commands do not sign you out of Google.", Toast.LENGTH_LONG).show();
         });
         findViewById(R.id.btn_apply_strict).setOnClickListener(v -> {
-            if (ProtectLock.apply(this)) {
-                Toast.makeText(this, "Strict lock on. Android will hide Uninstall until you disarm.", Toast.LENGTH_LONG).show();
+            AccessibilityKeeper.restoreIfAllowed(this);
+            boolean owner = ProtectLock.apply(this);
+            if (owner) {
+                Toast.makeText(this, "Device Owner lock is on.", Toast.LENGTH_LONG).show();
+            } else if (StaySignedIn.ready(this)) {
+                Toast.makeText(this, "Stay-signed-in lock is on. You are still logged into Google.", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "Device Owner is not set yet. Copy the command and run it over USB.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Open Stay signed in setup. You do not need to remove your Google account.", Toast.LENGTH_LONG).show();
             }
             refresh();
         });
@@ -203,10 +207,13 @@ public class MainActivity extends AppCompatActivity {
 
         TextView strict = findViewById(R.id.text_strict_status);
         if (DeviceStatus.strictUninstallLock(this) && AccessibilityKeeper.canRestore(this)) {
-            strict.setText("Strict lock on. Uninstall, battery limits, and Accessibility stay protected. Disarm with an authenticator code.");
+            strict.setText("Full lock on. Uninstall, battery, and Accessibility stay protected.");
+            strict.setTextColor(0xFF2E7D32);
+        } else if (StaySignedIn.ready(this)) {
+            strict.setText("Stay-signed-in lock on. You kept your Google accounts. Uninstall is still possible unless you later accept Device Owner sign-out.");
             strict.setTextColor(0xFF2E7D32);
         } else if (DeviceStatus.strictUninstallLock(this)) {
-            strict.setText("Uninstall and battery are locked. Accessibility can still be turned off until you run the extra ADB grant command.");
+            strict.setText("Uninstall and battery are locked. Run the stay-signed-in grant to keep Accessibility on.");
             strict.setTextColor(0xFFFFA000);
         } else if (admin) {
             strict.setText("Weak lock only. Settings can still deactivate device admin, then uninstall. Run the Device Owner command to make uninstall hard.");

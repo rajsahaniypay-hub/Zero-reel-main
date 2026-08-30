@@ -197,20 +197,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Copy Device Owner command" />
+            android:text="Copy stay-signed-in commands" />
 
         <Button
             android:id="@+id/btn_apply_strict"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Apply strict lock" />
+            android:text="Check / apply lock" />
 
         <Button
             android:id="@+id/btn_strict_help"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Easier Device Owner setup" />
+            android:text="Stay signed in setup" />
 
         <TextView
             android:layout_width="wrap_content"
