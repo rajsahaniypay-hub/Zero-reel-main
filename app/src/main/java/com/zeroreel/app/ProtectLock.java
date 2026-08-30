@@ -3,6 +3,10 @@ package com.zeroreel.app;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Build;
+import android.os.UserManager;
+
+import java.util.Collections;
 
 final class ProtectLock {
     private ProtectLock() {}
@@ -27,7 +31,23 @@ final class ProtectLock {
     static boolean apply(Context context) {
         DevicePolicyManager dpm = dpm(context);
         if (dpm == null || !dpm.isDeviceOwnerApp(context.getPackageName())) return false;
-        dpm.setUninstallBlocked(DeviceStatus.adminComponent(context), context.getPackageName(), true);
+        ComponentName admin = DeviceStatus.adminComponent(context);
+        dpm.setUninstallBlocked(admin, context.getPackageName(), true);
+        try {
+            dpm.setPermittedAccessibilityServices(admin, Collections.singletonList(context.getPackageName()));
+        } catch (Exception ignored) {
+        }
+        try {
+            dpm.addUserRestriction(admin, UserManager.DISALLOW_SAFE_BOOT);
+        } catch (Exception ignored) {
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                dpm.setUserControlDisabledPackages(admin, Collections.singletonList(context.getPackageName()));
+            } catch (Exception ignored) {
+            }
+        }
+        AccessibilityKeeper.restoreIfAllowed(context);
         return uninstallBlocked(context);
     }
 
@@ -38,6 +58,11 @@ final class ProtectLock {
         ComponentName admin = DeviceStatus.adminComponent(context);
         try {
             if (dpm.isDeviceOwnerApp(context.getPackageName())) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    dpm.setUserControlDisabledPackages(admin, Collections.emptyList());
+                }
+                dpm.setPermittedAccessibilityServices(admin, null);
+                dpm.clearUserRestriction(admin, UserManager.DISALLOW_SAFE_BOOT);
                 dpm.setUninstallBlocked(admin, context.getPackageName(), false);
                 dpm.clearDeviceOwnerApp(context.getPackageName());
             }

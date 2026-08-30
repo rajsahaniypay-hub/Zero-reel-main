@@ -69,7 +69,8 @@ Easiest official path, also in the app under **Easier Device Owner setup**:
 adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver
 ```
 
-4. Tap **I ran it — apply lock**, then add the accounts back.
+4. Optional, to keep Accessibility on: `adb shell pm grant com.zeroreel.app android.permission.WRITE_SECURE_SETTINGS`
+5. Tap **I ran it — apply lock**, then add the same Google account back. That only signed you out on the phone; your password is unchanged.
 
 If the command fails, an account is still on the phone or another Device Owner already exists.
 

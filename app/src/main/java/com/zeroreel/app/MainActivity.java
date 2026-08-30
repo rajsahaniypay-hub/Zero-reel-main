@@ -173,8 +173,16 @@ public class MainActivity extends AppCompatActivity {
         } else if (armed && DeviceStatus.strictUninstallLock(this)) {
             status.setText("ARMED · STRICT LOCK");
             status.setTextColor(0xFF2E7D32);
-            detail.setText("Uninstall is blocked by Android. Authenticator code required to disarm.");
+            if (AccessibilityKeeper.canRestore(this)) {
+                detail.setText("Uninstall and battery settings are locked. Accessibility turns back on if you switch it off.");
+            } else {
+                detail.setText("Uninstall and battery settings are locked. Run the Accessibility lock command to keep Accessibility on.");
+            }
         } else if (armed) {
+            status.setText("ARMED");
+            status.setTextColor(0xFF2E7D32);
+            detail.setText("Blocking stays on after restart. Strict lock is still off, so Settings can disable Accessibility and uninstall.");
+        } else {
             status.setText("DISARMED");
             status.setTextColor(0xFFFF5722);
             detail.setText("Protection is off. Arm it again from setup if you still want blocking.");
@@ -187,14 +195,19 @@ public class MainActivity extends AppCompatActivity {
                 limit <= 0 ? "Always block" : allowedMin + " / " + limit + " min"
         );
 
-        setChip(R.id.text_access_chip, access, "Accessibility");
+        setChip(R.id.text_access_chip, access,
+                AccessibilityKeeper.canRestore(this) ? "Accessibility locked" : "Accessibility");
         setChip(R.id.text_admin_chip, DeviceStatus.strictUninstallLock(this), "Strict lock");
-        setChip(R.id.text_battery_chip, DeviceStatus.batteryUnrestricted(this), "Battery");
+        setChip(R.id.text_battery_chip, DeviceStatus.strictUninstallLock(this) || DeviceStatus.batteryUnrestricted(this),
+                DeviceStatus.strictUninstallLock(this) ? "Battery locked" : "Battery");
 
         TextView strict = findViewById(R.id.text_strict_status);
-        if (DeviceStatus.strictUninstallLock(this)) {
-            strict.setText("Strict lock on. The Uninstall button stays disabled until you disarm with an authenticator code.");
+        if (DeviceStatus.strictUninstallLock(this) && AccessibilityKeeper.canRestore(this)) {
+            strict.setText("Strict lock on. Uninstall, battery limits, and Accessibility stay protected. Disarm with an authenticator code.");
             strict.setTextColor(0xFF2E7D32);
+        } else if (DeviceStatus.strictUninstallLock(this)) {
+            strict.setText("Uninstall and battery are locked. Accessibility can still be turned off until you run the extra ADB grant command.");
+            strict.setTextColor(0xFFFFA000);
         } else if (admin) {
             strict.setText("Weak lock only. Settings can still deactivate device admin, then uninstall. Run the Device Owner command to make uninstall hard.");
             strict.setTextColor(0xFFC62828);

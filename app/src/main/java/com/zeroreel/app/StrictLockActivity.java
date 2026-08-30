@@ -17,6 +17,7 @@ public class StrictLockActivity extends AppCompatActivity {
         setContentView(R.layout.activity_strict_lock);
 
         ((TextView) findViewById(R.id.text_adb_command)).setText(ProtectLock.adbCommand(this));
+        ((TextView) findViewById(R.id.text_grant_command)).setText(AccessibilityKeeper.grantCommand(this));
 
         findViewById(R.id.btn_open_accounts).setOnClickListener(v ->
                 startSafe(new Intent(Settings.ACTION_SYNC_SETTINGS), "Open Settings → Accounts and remove Google accounts."));
@@ -29,6 +30,12 @@ public class StrictLockActivity extends AppCompatActivity {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
             clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel device owner", ProtectLock.adbCommand(this)));
             Toast.makeText(this, "Command copied. Paste it in a PC terminal or an ADB app on this phone.", Toast.LENGTH_LONG).show();
+        });
+
+        findViewById(R.id.btn_copy_grant).setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel accessibility lock", AccessibilityKeeper.grantCommand(this)));
+            Toast.makeText(this, "Command copied. Run it after Device Owner is set.", Toast.LENGTH_LONG).show();
         });
 
         findViewById(R.id.btn_apply_now).setOnClickListener(v -> {
@@ -52,8 +59,11 @@ public class StrictLockActivity extends AppCompatActivity {
 
     private void refresh() {
         TextView status = findViewById(R.id.text_lock_status);
-        if (DeviceStatus.strictUninstallLock(this)) {
-            status.setText("Strict lock is on. Uninstall is blocked until you disarm with an authenticator code.");
+        if (DeviceStatus.strictUninstallLock(this) && AccessibilityKeeper.canRestore(this)) {
+            status.setText("Strict lock is on. Uninstall and battery settings are locked. Accessibility will turn back on if you switch it off.");
+            status.setTextColor(0xFF2E7D32);
+        } else if (DeviceStatus.strictUninstallLock(this)) {
+            status.setText("Strict lock is on. Battery restriction is locked. Run the Accessibility lock command if turning Accessibility off is still too easy.");
             status.setTextColor(0xFF2E7D32);
         } else if (ProtectLock.isDeviceOwner(this)) {
             status.setText("This phone is Device Owner. Tap Apply lock to disable Uninstall.");

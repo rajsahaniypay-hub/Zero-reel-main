@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:lineSpacingMultiplier="1.35"
-            android:text="There is no one-tap button. Android will not let an app make itself Device Owner. The easy official path is: remove Google accounts, run one command, then add the accounts back."
+            android:text="Your Google password is not changed. Removing the account only signs you out on this phone so Android will accept the Device Owner command. After the lock is on, add the same account back and you stay signed in."
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp" />
 
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="This is the step most people miss. If a Google account stays on the phone, the command fails."
+            android:text="Temporary only. You will sign out of Gmail and Play on this phone, then sign back in at step 5. Your photos and mail stay in the account."
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="13sp" />
 
@@ -111,7 +111,41 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="4. Apply lock, then add accounts back"
+            android:text="4. Optional: lock Accessibility"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Android always lets you tap Accessibility off. This extra command lets Zero Reel turn it back on. Battery restrictions are locked automatically after Device Owner."
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/text_grant_command"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="?attr/colorButtonNormal"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:textIsSelectable="true"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btn_copy_grant"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Copy Accessibility lock command" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="5. Apply lock, then add accounts back"
             android:textStyle="bold" />
 
         <Button
