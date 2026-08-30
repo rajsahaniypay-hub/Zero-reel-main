@@ -26,14 +26,15 @@ Factory reset still wipes the phone. That is intentional so you cannot get perma
 From AntiScroll (GPL-3.0):
 
 - YouTube Shorts view IDs such as `shorts_container`, `reel_player_page`, `reel_recycler`
-- Instagram Reels view IDs such as `clips_viewer_view_pager`, `reel_viewer`
+- Instagram Reels view IDs such as `clips_viewer_view_pager`
 
 Added in Zero Reel:
 
 - Extra YouTube / Instagram IDs and class-name fallbacks
 - TikTok (whole app, because the feed is short-form)
-- Facebook and Messenger Reels
-- Snapchat Spotlight
+- Facebook and Messenger Reels (content descriptions, selected Reels tab, not the main feed)
+- Snapchat Spotlight only (`spotlight_container`; Camera, Chat, and Stories stay open)
+- Instagram / Snapchat / Facebook send you to chat or messages instead of closing the app
 - Daily allowance (off / 5 / 15 / 30 minutes) before hard block
 - Blocks-today counter
 - 5-minute pause (authenticator required)

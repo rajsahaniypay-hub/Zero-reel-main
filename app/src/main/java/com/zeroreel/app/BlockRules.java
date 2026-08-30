@@ -3,7 +3,9 @@ package com.zeroreel.app;
 /**
  * Short-form blocking signatures.
  * YouTube Shorts and Instagram Reels view IDs are taken from AntiScroll
- * (yadavnikhil03/AntiScroll, GPL-3.0) and extended with extra platforms.
+ * (yadavnikhil03/AntiScroll, GPL-3.0). Facebook Reels content-description
+ * and Snapchat Spotlight view IDs follow Scrolless
+ * (duartebarbosadev/Scrolless, GPL-3.0).
  */
 final class BlockRules {
 
@@ -105,32 +107,89 @@ final class BlockRules {
             "row_inbox"
     };
 
+    // Facebook almost never exposes reel view IDs. Keep these as a fallback
+    // only; primary detection is content descriptions + the Reels tab.
     static final String[] FACEBOOK_VIEW_IDS = {
             "reels_viewer",
             "reels_viewer_container",
-            "watch_feed",
-            "video_player_reels",
-            "immersive_video"
+            "video_player_reels"
     };
 
     static final String[] FACEBOOK_CLASS_HINTS = {
             "reelsviewer",
             "reels.viewer",
-            "immersivevideo",
-            "fullscreenvideoviewer"
+            "reelsactivity",
+            "fbshorts",
+            "shortformvideo"
     };
 
+    static final String[] FACEBOOK_CONTENT_DESCS = {
+            "FbShortsComposerAttachmentComponentSpec_STICKER",
+            "FbShortsComposerAttachmentComponentSpec_GIF"
+    };
+
+    // Tab a11y labels look like "Reels, tab 2 of 6". Bare "Reels" also appears
+    // on home-feed shelves and must not trigger a block.
+    static final String[] FACEBOOK_SELECTED_PREFIXES = {
+            "Reels,",
+            "Reels, tab"
+    };
+
+    static final String[] FACEBOOK_CHAT_CLASS_HINTS = {
+            "threadview",
+            "inboxfragment",
+            "messagesinbox",
+            "messagingactivity",
+            "messagelist"
+    };
+
+    static final String[] FACEBOOK_CHAT_VIEW_IDS = {
+            "thread_list",
+            "message_list",
+            "inbox_container",
+            "messenger_inbox",
+            "thread_view"
+    };
+
+    // Spotlight viewer only. A bare "spotlight" or "discover_feed" also matches
+    // Camera / Stories and Back then exits Snapchat.
     static final String[] SNAPCHAT_VIEW_IDS = {
-            "spotlight",
-            "discover_feed",
-            "spotlight_view"
+            "spotlight_container",
+            "spotlight_player",
+            "spotlight_pager",
+            "spotlight_video"
     };
 
     static final String[] SNAPCHAT_CLASS_HINTS = {
-            "spotlight",
-            "discoverfeed",
-            "discover.feed"
+            "spotlightactivity",
+            "spotlight.activity",
+            "discover.spotlight",
+            "spotlightfeed"
     };
+
+    static final String[] SNAPCHAT_SAFE_CLASS_HINTS = {
+            "chatsactivity",
+            "chat.feed",
+            "chatpage",
+            "cameraactivity",
+            "ngs.camera",
+            "camerapage"
+    };
+
+    static final String[] SNAPCHAT_SAFE_VIEW_IDS = {
+            "chat_feed",
+            "chat_drawer",
+            "conversation_list",
+            "camera_view",
+            "camera_page",
+            "ngs_camera"
+    };
+
+    static final String FACEBOOK_REEL_RECYCLER = "androidx.recyclerview.widget.RecyclerView";
+    static final String FACEBOOK_REEL_BUTTON = "android.widget.Button";
+    static final String FACEBOOK_REEL_SURFACE = "android.view.SurfaceView";
+    static final float FACEBOOK_REEL_MIN_WIDTH = 0.9f;
+    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.75f;
 
     private BlockRules() {}
 
@@ -161,6 +220,69 @@ final class BlockRules {
             case SNAPCHAT: return SNAPCHAT_CLASS_HINTS;
             default: return new String[0];
         }
+    }
+
+    static String[] safeViewIds(Platform platform) {
+        switch (platform) {
+            case INSTAGRAM: return INSTAGRAM_CHAT_VIEW_IDS;
+            case FACEBOOK: return FACEBOOK_CHAT_VIEW_IDS;
+            case SNAPCHAT: return SNAPCHAT_SAFE_VIEW_IDS;
+            default: return new String[0];
+        }
+    }
+
+    static String[] safeClassHints(Platform platform) {
+        switch (platform) {
+            case INSTAGRAM: return INSTAGRAM_CHAT_CLASS_HINTS;
+            case FACEBOOK: return FACEBOOK_CHAT_CLASS_HINTS;
+            case SNAPCHAT: return SNAPCHAT_SAFE_CLASS_HINTS;
+            default: return new String[0];
+        }
+    }
+
+    static boolean usesChatRedirect(Platform platform) {
+        return platform == Platform.INSTAGRAM
+                || platform == Platform.FACEBOOK
+                || platform == Platform.SNAPCHAT;
+    }
+
+    static boolean isMessengerPackage(String packageName) {
+        return "com.facebook.orca".equals(packageName);
+    }
+
+    static boolean matchHint(String value, String[] hints) {
+        return firstHint(value, hints) != null;
+    }
+
+    static String firstHint(String value, String[] hints) {
+        if (value == null || hints == null) return null;
+        String lower = value.toLowerCase(java.util.Locale.US);
+        for (String hint : hints) {
+            if (lower.contains(hint.toLowerCase(java.util.Locale.US))) return hint;
+        }
+        return null;
+    }
+
+    static boolean matchExactContentDesc(String value, String[] expected) {
+        if (value == null || expected == null) return false;
+        for (String item : expected) {
+            if (value.equalsIgnoreCase(item)) return true;
+        }
+        return false;
+    }
+
+    static boolean matchSelectedPrefix(String value, boolean selected, String[] prefixes) {
+        if (!selected || value == null || prefixes == null) return false;
+        for (String prefix : prefixes) {
+            if (value.regionMatches(true, 0, prefix, 0, prefix.length())) return true;
+        }
+        return false;
+    }
+
+    static boolean isFacebookReelClass(String className) {
+        return FACEBOOK_REEL_RECYCLER.equals(className)
+                || FACEBOOK_REEL_BUTTON.equals(className)
+                || FACEBOOK_REEL_SURFACE.equals(className);
     }
 
     private static boolean contains(String value, String[] list) {
