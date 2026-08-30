@@ -7,5 +7,8 @@ Debug build of Zero Reel for Android 8+.
 2. Open the file on the phone.
 3. Allow install from this source if Android asks.
 4. Open **Zero Reel**, add the secret to Google Authenticator or Authy, enable Accessibility and uninstall protection, then arm it.
+5. To make uninstall hard, from a computer run:
+   `adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver`
+   Then tap **Apply strict lock** in the app.
 
 This is a debug APK, so Android may show an unknown-source warning. That is expected.
