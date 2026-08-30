@@ -27,3 +27,5 @@ In short: You can freely use, modify, and distribute this software, but any deri
 
 ---
 Made with ❤️ by @yadavnikhil03
+
+Source: imported from [yadavnikhil03/AntiScroll](https://github.com/yadavnikhil03/AntiScroll) (`AntiScroll-main`).
