@@ -103,7 +103,12 @@ public class SetupActivity extends AppCompatActivity {
 
     private void refreshStatus() {
         setStatus(R.id.text_access_status, DeviceStatus.accessibilityEnabled(this), "Accessibility on", "Accessibility off");
-        setStatus(R.id.text_admin_status, DeviceStatus.adminActive(this), "Uninstall protection on", "Uninstall protection off");
+        if (DeviceStatus.strictUninstallLock(this)) {
+            setStatus(R.id.text_admin_status, true, "Strict uninstall lock on", "Uninstall protection off");
+        } else {
+            setStatus(R.id.text_admin_status, DeviceStatus.adminActive(this),
+                    "Weak lock on (Settings can still uninstall)", "Uninstall protection off");
+        }
         setStatus(R.id.text_battery_status, DeviceStatus.batteryUnrestricted(this), "Battery unrestricted", "Battery may kill the service");
     }
 

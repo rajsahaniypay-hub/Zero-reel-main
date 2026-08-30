@@ -9,4 +9,10 @@ public class ZeroReelAdminReceiver extends DeviceAdminReceiver {
     public CharSequence onDisableRequested(Context context, Intent intent) {
         return context.getString(R.string.admin_disable_warning);
     }
+
+    @Override
+    public void onEnabled(Context context, Intent intent) {
+        super.onEnabled(context, intent);
+        ProtectLock.apply(context);
+    }
 }

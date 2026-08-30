@@ -11,7 +11,8 @@ A **visible** app on your phone. You install it, add a TOTP secret to an authent
 Once armed:
 
 - A foreground service and boot receiver start protection after restart
-- Device admin makes Android ask you to deactivate the app before uninstall
+- Regular device admin only adds an extra Settings tap (uninstall is still easy)
+- **Strict uninstall lock** (Android Device Owner) disables the Uninstall button until you disarm with an authenticator code
 - Authenticator code is required inside Zero Reel to pause, change the block list, or disarm
 
 ## What this is not
@@ -56,7 +57,15 @@ Normal YouTube videos, Instagram posts, Facebook feed, and Snapchat chat are not
 5. Optionally ignore battery optimizations so OEMs do not kill the service.
 6. Tap **Arm Zero Reel**.
 
-To uninstall later: **Disarm and allow uninstall** with a valid authenticator code, then uninstall from Settings.
+To make uninstall hard, run this from a computer after the app is installed:
+
+```
+adb shell dpm set-device-owner com.zeroreel.app/.ZeroReelAdminReceiver
+```
+
+Then open Zero Reel and tap **Apply strict lock**. If the command fails, the phone already has a Device Owner or still has Google accounts; remove accounts or use a test phone.
+
+To uninstall later: **Disarm and allow uninstall** with a valid authenticator code, then uninstall from Settings. Factory reset still wipes the phone.
 
 ## License
 

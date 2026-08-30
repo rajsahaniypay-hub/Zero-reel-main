@@ -40,6 +40,7 @@ public class BlockGuardService extends Service {
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
+        ProtectLock.apply(this);
     }
 
     @Override
@@ -83,9 +84,14 @@ public class BlockGuardService extends Service {
                 this, 0, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-        String text = Prefs.isPaused(this)
-                ? getString(R.string.guard_paused)
-                : getString(R.string.guard_active);
+        String text;
+        if (Prefs.isPaused(this)) {
+            text = getString(R.string.guard_paused);
+        } else if (DeviceStatus.strictUninstallLock(this)) {
+            text = "Strict lock on. Authenticator required to uninstall.";
+        } else {
+            text = getString(R.string.guard_active);
+        }
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_splash_logo)
                 .setContentTitle(getString(R.string.app_name))

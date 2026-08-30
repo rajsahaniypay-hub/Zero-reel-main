@@ -1,6 +1,8 @@
 package com.zeroreel.app;
 
 import android.app.admin.DevicePolicyManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         if (Prefs.masterEnabled(this)) {
             BlockGuardService.start(this);
         }
+        ProtectLock.apply(this);
 
         findViewById(R.id.btn_accessibility).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
@@ -94,9 +97,29 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(this, "Paused for 5 minutes.", Toast.LENGTH_SHORT).show();
                         }));
 
+        findViewById(R.id.btn_copy_adb).setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("Zero Reel device owner", ProtectLock.adbCommand(this)));
+            Toast.makeText(this, "Command copied. Run it from a computer with USB debugging.", Toast.LENGTH_LONG).show();
+        });
+        findViewById(R.id.btn_apply_strict).setOnClickListener(v -> {
+            if (ProtectLock.apply(this)) {
+                Toast.makeText(this, "Strict lock on. Android will hide Uninstall until you disarm.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Device Owner is not set yet. Copy the command and run it over USB.", Toast.LENGTH_LONG).show();
+            }
+            refresh();
+        });
+        findViewById(R.id.btn_strict_help).setOnClickListener(v ->
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.strict_lock_title)
+                        .setMessage(R.string.strict_lock_help)
+                        .setPositiveButton("OK", null)
+                        .show());
+
         findViewById(R.id.btn_disarm).setOnClickListener(v ->
                 UnlockHelper.confirm(this, "Disarm Zero Reel",
-                        "This turns off blocking and uninstall protection. Enter your authenticator code.",
+                        "This turns off blocking and allows uninstall. Enter your authenticator code.",
                         this::disarm));
 
         findViewById(R.id.btn_show_secret).setOnClickListener(v ->
@@ -151,11 +174,11 @@ public class MainActivity extends AppCompatActivity {
             status.setText("PAUSED");
             status.setTextColor(0xFFFFA000);
             detail.setText("Blocking resumes in " + Math.max(1, Prefs.pauseRemainingMs(this) / 60000L) + " min.");
-        } else if (armed) {
-            status.setText("ARMED");
+        } else if (armed && DeviceStatus.strictUninstallLock(this)) {
+            status.setText("ARMED · STRICT LOCK");
             status.setTextColor(0xFF2E7D32);
-            detail.setText("Blocking stays on after restart. Authenticator code required to stop or uninstall.");
-        } else {
+            detail.setText("Uninstall is blocked by Android. Authenticator code required to disarm.");
+        } else if (armed) {
             status.setText("DISARMED");
             status.setTextColor(0xFFFF5722);
             detail.setText("Protection is off. Arm it again from setup if you still want blocking.");
@@ -169,8 +192,20 @@ public class MainActivity extends AppCompatActivity {
         );
 
         setChip(R.id.text_access_chip, access, "Accessibility");
-        setChip(R.id.text_admin_chip, admin, "Uninstall lock");
+        setChip(R.id.text_admin_chip, DeviceStatus.strictUninstallLock(this), "Strict lock");
         setChip(R.id.text_battery_chip, DeviceStatus.batteryUnrestricted(this), "Battery");
+
+        TextView strict = findViewById(R.id.text_strict_status);
+        if (DeviceStatus.strictUninstallLock(this)) {
+            strict.setText("Strict lock on. The Uninstall button stays disabled until you disarm with an authenticator code.");
+            strict.setTextColor(0xFF2E7D32);
+        } else if (admin) {
+            strict.setText("Weak lock only. Settings can still deactivate device admin, then uninstall. Run the Device Owner command to make uninstall hard.");
+            strict.setTextColor(0xFFC62828);
+        } else {
+            strict.setText("No uninstall lock. Enable device admin, then apply strict lock.");
+            strict.setTextColor(0xFFC62828);
+        }
 
         ((SwitchMaterial) findViewById(R.id.switch_youtube)).setChecked(Prefs.platformEnabled(this, Prefs.APP_YOUTUBE, true));
         ((SwitchMaterial) findViewById(R.id.switch_instagram)).setChecked(Prefs.platformEnabled(this, Prefs.APP_INSTAGRAM, true));
@@ -202,10 +237,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void disarm() {
-        DevicePolicyManager dpm = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
-        if (dpm != null && DeviceStatus.adminActive(this)) {
-            dpm.removeActiveAdmin(DeviceStatus.adminComponent(this));
-        }
+        ProtectLock.release(this);
         SharedPreferences.Editor editor = Prefs.get(this).edit();
         editor.putBoolean(Prefs.LOCK_ARMED, false);
         editor.putBoolean(Prefs.MASTER_ENABLED, false);
@@ -213,6 +245,6 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
         BlockGuardService.stop(this);
         refresh();
-        Toast.makeText(this, "Disarmed. You can now uninstall Zero Reel from Settings.", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Disarmed. Uninstall is allowed again.", Toast.LENGTH_LONG).show();
     }
 }

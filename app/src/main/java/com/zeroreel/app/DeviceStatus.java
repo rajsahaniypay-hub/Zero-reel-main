@@ -30,6 +30,10 @@ final class DeviceStatus {
         return dpm != null && dpm.isAdminActive(adminComponent(context));
     }
 
+    static boolean strictUninstallLock(Context context) {
+        return ProtectLock.isDeviceOwner(context) && ProtectLock.uninstallBlocked(context);
+    }
+
     static boolean batteryUnrestricted(Context context) {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) return true;
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
