@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#071614">
+    android:background="#111111">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -12,29 +12,28 @@
         android:orientation="vertical">
 
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="16dp"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_marginBottom="20dp"
             android:contentDescription="@string/app_name"
             android:src="@drawable/ic_splash_logo" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
-            android:letterSpacing="0.08"
-            android:text="Zero Reel"
-            android:textColor="#F4FFFD"
-            android:textSize="28sp"
-            android:textStyle="bold" />
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.18"
+            android:text="ZERO REEL"
+            android:textColor="#F5F5F5"
+            android:textSize="22sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             android:letterSpacing="0.08"
-            android:text="Self-control lock for short video"
-            android:textColor="#7FA8A4"
+            android:text="less scroll"
+            android:textColor="#888888"
             android:textSize="13sp" />
     </LinearLayout>
 </RelativeLayout>

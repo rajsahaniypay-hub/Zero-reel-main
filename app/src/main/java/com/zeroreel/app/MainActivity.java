@@ -119,11 +119,11 @@ public class MainActivity extends AppCompatActivity {
                         this::disarm));
 
         findViewById(R.id.btn_show_secret).setOnClickListener(v ->
-                UnlockHelper.confirm(this, "Show authenticator secret",
-                        "Enter a valid code to reveal the backup secret.",
+                UnlockHelper.confirmReveal(this, "Show unique lock secret",
+                        "Enter the universal reveal authenticator code. This is the same on every phone.",
                         () -> new AlertDialog.Builder(this)
-                                .setTitle("Authenticator secret")
-                                .setMessage(Prefs.totpSecret(this) + "\n\nKeep this private. Anyone with it can disarm Zero Reel.")
+                                .setTitle("Unique lock secret")
+                                .setMessage(Prefs.totpSecret(this) + "\n\nThis unique key controls pause, disarm, and settings on this phone.")
                                 .setPositiveButton("OK", null)
                                 .show()));
     }
@@ -164,26 +164,23 @@ public class MainActivity extends AppCompatActivity {
         TextView status = findViewById(R.id.text_service_status);
         TextView detail = findViewById(R.id.text_status_detail);
         if (!access) {
-            status.setText("SERVICE INTERRUPTED");
-            status.setTextColor(0xFFFF5722);
-            detail.setText("Turn accessibility back on. Zero Reel cannot block Reels without it.");
+            status.setText("INTERRUPTED");
+            detail.setText("Turn Accessibility back on. Zero Reel cannot block Reels without it.");
         } else if (paused) {
             status.setText("PAUSED");
-            status.setTextColor(0xFFFFA000);
             detail.setText("Blocking resumes in " + Math.max(1, Prefs.pauseRemainingMs(this) / 60000L) + " min.");
         } else if (armed && ProtectLock.ready(this)) {
-            status.setText("ARMED · MAX LOCK");
-            status.setTextColor(0xFF2E7D32);
-            detail.setText("Blocking is on. Uninstall, force-stop, battery, Safe Mode, extra users, and USB debugging are locked. Authenticator required to disarm.");
+            status.setText("ARMED  ·  MAX LOCK");
+            detail.setText("Blocking is on. Uninstall, force-stop, battery, Safe Mode, extra users, and USB debugging are locked.");
         } else if (armed) {
             status.setText("ARMED");
-            status.setTextColor(0xFF2E7D32);
-            detail.setText("Blocking is on. Device Owner is optional and adds the strongest uninstall and battery lock.");
+            detail.setText("Blocking is on. Device Owner is optional for the strongest lock.");
         } else {
             status.setText("DISARMED");
-            status.setTextColor(0xFFFF5722);
-            detail.setText("Protection is off. Arm it again from setup if you still want blocking.");
+            detail.setText("Protection is off.");
         }
+        status.setTextColor(ink());
+        detail.setTextColor(muted());
 
         ((TextView) findViewById(R.id.text_blocks_today)).setText(String.valueOf(UsageStore.blocksToday(this)));
         refreshUrgeCounts();
@@ -202,18 +199,13 @@ public class MainActivity extends AppCompatActivity {
 
         TextView strict = findViewById(R.id.text_strict_status);
         if (ProtectLock.ready(this)) {
-            strict.setText("Max lock is on. Uninstall, Accessibility, Safe Mode, extra users, and battery limits stay locked. Disarm with an authenticator code.");
-            strict.setTextColor(0xFF2E7D32);
+            strict.setText("Max lock is on. Disarm with your unique authenticator code.");
         } else if (ProtectLock.isDeviceOwner(this)) {
             strict.setText("Device Owner is set. Run the WRITE_SECURE_SETTINGS grant so Accessibility stays locked on.");
-            strict.setTextColor(0xFFFFA000);
-        } else if (admin) {
-            strict.setText("Blocking already works. Device Owner is optional and is the strongest self-control lock: Uninstall disabled, Accessibility locked, Safe Mode and extra users blocked.");
-            strict.setTextColor(0xFF1565C0);
         } else {
-            strict.setText("Blocking already works. Turn on uninstall protection, then optionally add Device Owner for the strongest lock.");
-            strict.setTextColor(0xFF1565C0);
+            strict.setText("Blocking already works. Device Owner is optional for the strongest lock.");
         }
+        strict.setTextColor(muted());
 
         ((SwitchMaterial) findViewById(R.id.switch_youtube)).setChecked(Prefs.platformEnabled(this, Prefs.APP_YOUTUBE, true));
         ((SwitchMaterial) findViewById(R.id.switch_instagram)).setChecked(Prefs.platformEnabled(this, Prefs.APP_INSTAGRAM, true));
@@ -239,8 +231,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void setChip(int id, boolean ok, String label) {
         TextView view = findViewById(id);
-        view.setText(label + (ok ? " on" : " off"));
-        view.setTextColor(ok ? 0xFF2E7D32 : 0xFFC62828);
+        view.setText(label + (ok ? "  on" : "  off"));
+        view.setTextColor(ok ? ink() : muted());
+    }
+
+    private int ink() {
+        return androidx.core.content.ContextCompat.getColor(this, R.color.zr_ink);
+    }
+
+    private int muted() {
+        return androidx.core.content.ContextCompat.getColor(this, R.color.zr_muted);
     }
 
     private void selectLimit(MaterialButtonToggleGroup group, int minutes) {

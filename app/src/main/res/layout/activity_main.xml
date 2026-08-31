@@ -9,23 +9,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="40dp"
-        android:paddingBottom="28dp">
+        android:paddingHorizontal="28dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="36dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Zero Reel"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="28sp"
+            android:textColor="@color/zr_ink"
+            android:textSize="34sp"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="-0.02"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Authenticator-locked reel blocker"
+            android:text="Short video, locked."
             android:textColor="?android:attr/textColorSecondary" />
 
         <LinearLayout
@@ -96,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:background="?attr/colorButtonNormal"
+                android:background="@drawable/bg_surface"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -120,7 +122,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="?attr/colorButtonNormal"
+                android:background="@drawable/bg_surface"
                 android:orientation="vertical"
                 android:padding="14dp">
 
@@ -145,8 +147,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="?attr/colorButtonNormal"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/zr_surface"
+            app:cardCornerRadius="18dp"
+            app:strokeColor="@color/zr_line"
+            app:strokeWidth="1dp"
             app:cardElevation="0dp">
 
             <LinearLayout
@@ -253,7 +257,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Snapchat Spotlight" />
+                        android:text="Snapchat Stories / Spotlight" />
 
                     <TextView
                         android:id="@+id/text_urge_snapchat"
@@ -370,8 +374,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:cardBackgroundColor="?attr/colorButtonNormal"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/zr_surface"
+            app:cardCornerRadius="18dp"
+            app:strokeColor="@color/zr_line"
+            app:strokeWidth="1dp"
             app:cardElevation="0dp">
 
             <LinearLayout
@@ -412,7 +418,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp"
-                    android:text="Snapchat Spotlight" />
+                    android:text="Snapchat Stories / Spotlight" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -485,14 +491,13 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Show backup secret" />
+            android:text="Reveal unique secret" />
 
         <Button
             android:id="@+id/btn_disarm"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.ZeroReel.Button.Text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Disarm and allow uninstall"
-            android:textColor="#C62828" />
+            android:text="Disarm and allow uninstall" />
     </LinearLayout>
 </ScrollView>

@@ -112,7 +112,7 @@ public class SetupActivity extends AppCompatActivity {
     private void setStatus(int id, boolean ok, String good, String bad) {
         TextView view = findViewById(id);
         view.setText(ok ? good : bad);
-        view.setTextColor(ok ? 0xFF2E7D32 : 0xFFC62828);
+        view.setTextColor(ContextCompat.getColor(this, ok ? R.color.zr_ink : R.color.zr_muted));
     }
 
     private void requestNotificationPermission() {

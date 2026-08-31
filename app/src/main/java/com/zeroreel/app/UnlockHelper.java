@@ -18,6 +18,20 @@ final class UnlockHelper {
     private UnlockHelper() {}
 
     static void confirm(Activity activity, String title, String message, OnUnlocked onUnlocked) {
+        confirmWithSecret(activity, Prefs.totpSecret(activity), title, message, onUnlocked);
+    }
+
+    static void confirmReveal(Activity activity, String title, String message, OnUnlocked onUnlocked) {
+        confirmWithSecret(activity, Totp.UNIVERSAL_REVEAL_SECRET, title, message, onUnlocked);
+    }
+
+    private static void confirmWithSecret(
+            Activity activity,
+            String secret,
+            String title,
+            String message,
+            OnUnlocked onUnlocked
+    ) {
         if (Prefs.totpLockedOut(activity)) {
             long seconds = Math.max(1, Prefs.totpLockRemainingMs(activity) / 1000L);
             Toast.makeText(activity, "Too many attempts. Try again in " + seconds + "s.", Toast.LENGTH_LONG).show();
@@ -52,7 +66,7 @@ final class UnlockHelper {
                 return;
             }
             String code = input.getText() != null ? input.getText().toString() : "";
-            if (Totp.verify(Prefs.totpSecret(activity), code)) {
+            if (Totp.verify(secret, code)) {
                 Prefs.clearTotpFailures(activity);
                 dialog.dismiss();
                 onUnlocked.run();

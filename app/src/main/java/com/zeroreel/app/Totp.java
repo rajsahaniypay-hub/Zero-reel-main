@@ -13,6 +13,9 @@ final class Totp {
     private static final int PERIOD_SECONDS = 30;
     private static final int DIGITS = 6;
 
+    /** Same on every install. Used only to reveal the unique lock secret. */
+    static final String UNIVERSAL_REVEAL_SECRET = "K7N2WQXM4TYP5HRCZVLB6G3FJEASUD2I";
+
     private Totp() {}
 
     static String generateSecret() {
@@ -22,11 +25,19 @@ final class Totp {
     }
 
     static String otpAuthUri(String secret) {
-        return "otpauth://totp/" + Uri.encode("Zero Reel:lock")
+        return otpAuthUri(secret, "lock");
+    }
+
+    static String otpAuthUri(String secret, String account) {
+        return "otpauth://totp/" + Uri.encode("Zero Reel:" + account)
                 + "?secret=" + secret
                 + "&issuer=" + Uri.encode("Zero Reel")
                 + "&algorithm=SHA1&digits=" + DIGITS
                 + "&period=" + PERIOD_SECONDS;
+    }
+
+    static String universalRevealUri() {
+        return otpAuthUri(UNIVERSAL_REVEAL_SECRET, "reveal");
     }
 
     static boolean verify(String secret, String code) {

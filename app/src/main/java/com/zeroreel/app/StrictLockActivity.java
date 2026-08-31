@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 public class StrictLockActivity extends AppCompatActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -101,25 +102,29 @@ public class StrictLockActivity extends AppCompatActivity {
         TextView debug = findViewById(R.id.text_step_debug);
         TextView command = findViewById(R.id.text_step_command);
 
+        int ink = ContextCompat.getColor(this, R.color.zr_ink);
+        int muted = ContextCompat.getColor(this, R.color.zr_muted);
         if (ready) {
             status.setText("Device Owner is on. Sign back into Google, then open Zero Reel.");
-            status.setTextColor(0xFF2E7D32);
             accounts.setText("1. Done. You can sign back into Google.");
-            accounts.setTextColor(0xFF2E7D32);
             debug.setText("2. Done.");
-            debug.setTextColor(0xFF2E7D32);
             command.setText("3. Done. Device Owner accepted.");
-            command.setTextColor(0xFF2E7D32);
+            status.setTextColor(ink);
+            accounts.setTextColor(ink);
+            debug.setTextColor(ink);
+            command.setTextColor(ink);
             findViewById(R.id.btn_add_account).setVisibility(View.VISIBLE);
             findViewById(R.id.btn_apply_now).setVisibility(View.VISIBLE);
             findViewById(R.id.btn_skip_owner).setVisibility(View.GONE);
         } else {
             status.setText("Optional strongest lock. Blocking already works without this. Android only accepts Device Owner after Google accounts are removed. This screen updates itself after the command succeeds.");
-            status.setTextColor(0xFF1565C0);
             accounts.setText("1. Remove Google accounts on this phone (temporary).");
-            accounts.setTextColor(0xFFC62828);
             debug.setText("2. Turn on USB debugging or Wireless debugging.");
             command.setText("3. Waiting for the command…");
+            status.setTextColor(muted);
+            accounts.setTextColor(ink);
+            debug.setTextColor(ink);
+            command.setTextColor(ink);
             findViewById(R.id.btn_add_account).setVisibility(View.GONE);
             findViewById(R.id.btn_apply_now).setVisibility(View.GONE);
             findViewById(R.id.btn_skip_owner).setVisibility(View.VISIBLE);
