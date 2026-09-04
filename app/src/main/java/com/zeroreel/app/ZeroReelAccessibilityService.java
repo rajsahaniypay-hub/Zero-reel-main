@@ -63,7 +63,13 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         if (event == null || event.getPackageName() == null) return;
         if (!Prefs.masterEnabled(this) || Prefs.isPaused(this)) return;
 
-        String packageName = event.getPackageName().toString();
+        String eventPackage = event.getPackageName().toString();
+        if (eventPackage.equals(getPackageName())) return;
+
+        // WINDOWS_CHANGED and leftover Instagram windows often keep the
+        // event package as Instagram while YouTube Shorts is focused.
+        // Always score the app the user is actually looking at.
+        String packageName = preferredPackage(eventPackage);
         if (packageName.equals(getPackageName())) return;
 
         BlockRules.Platform platform = BlockRules.matchPackage(packageName);
@@ -72,9 +78,11 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
 
         String className = event.getClassName() != null ? event.getClassName().toString() : "";
         ScanResult scan = new ScanResult();
-        scan.classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
-        scan.safeSurface = BlockRules.matchHint(className, BlockRules.safeClassHints(platform));
-        scanAllWindows(event, platform, scan);
+        if (BlockRules.belongsTo(eventPackage, platform)) {
+            scan.classHit = BlockRules.firstHint(className, BlockRules.classHints(platform));
+            scan.safeSurface = BlockRules.matchHint(className, BlockRules.safeClassHints(platform));
+        }
+        scanOwnedWindows(event, platform, scan);
 
         // Chat/camera wins only when the reel viewer is not actually on screen.
         // A chat icon on Spotlight or a Messages tab on Facebook must not hide Reels.
@@ -99,9 +107,11 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         } else if (scan.selectedHit != null) {
             matched = true;
             reason = scan.selectedHit;
-        } else if (scan.facebookStructure) {
+        } else if (scan.overlayHit) {
             matched = true;
-            reason = "facebook-reel-structure";
+            reason = platform == BlockRules.Platform.FACEBOOK
+                    ? "facebook-reel-structure"
+                    : "overlay-reel-viewer";
         } else {
             matched = false;
             reason = null;
@@ -122,6 +132,13 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
             }
             if (!UsageStore.budgetExhausted(this)) return;
         }
+
+        String livePackage = preferredPackage(packageName);
+        if (!BlockRules.belongsTo(livePackage, platform)) {
+            writeLog("SKIP ACTION focused=" + livePackage + " platform=" + platform);
+            return;
+        }
+        packageName = livePackage;
 
         long cooldown = BlockRules.usesRedirect(platform) ? REDIRECT_COOLDOWN_MS : BLOCK_COOLDOWN_MS;
         if (now - lastBlockTime <= cooldown) return;
@@ -145,6 +162,9 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
             Toast.makeText(this, BlockRules.isMessengerPackage(packageName)
                     ? R.string.blocked_toast
                     : R.string.blocked_facebook_settings, Toast.LENGTH_SHORT).show();
+        } else if (platform == BlockRules.Platform.YOUTUBE) {
+            performGlobalAction(GLOBAL_ACTION_BACK);
+            Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
         } else if (platform.blockEntireApp) {
             performGlobalAction(GLOBAL_ACTION_HOME);
             Toast.makeText(this, getString(R.string.blocked_toast), Toast.LENGTH_SHORT).show();
@@ -154,7 +174,61 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void scanAllWindows(AccessibilityEvent event, BlockRules.Platform platform, ScanResult scan) {
+    private String preferredPackage(String fallback) {
+        String focused = focusedAppPackage();
+        return focused != null && !focused.isEmpty() ? focused : fallback;
+    }
+
+    private String focusedAppPackage() {
+        try {
+            List<AccessibilityWindowInfo> windows = getWindows();
+            if (windows != null) {
+                String active = null;
+                for (AccessibilityWindowInfo window : windows) {
+                    if (window == null) continue;
+                    AccessibilityNodeInfo root = null;
+                    try {
+                        if (window.getType() != AccessibilityWindowInfo.TYPE_APPLICATION) {
+                            continue;
+                        }
+                        root = window.getRoot();
+                        if (root == null || root.getPackageName() == null) continue;
+                        String pkg = root.getPackageName().toString();
+                        if (window.isFocused()) {
+                            return pkg;
+                        }
+                        if (window.isActive()) {
+                            active = pkg;
+                        }
+                    } finally {
+                        if (root != null) root.recycle();
+                        window.recycle();
+                    }
+                }
+                if (active != null) return active;
+            }
+        } catch (RuntimeException ignored) {
+        }
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root != null) {
+            try {
+                if (root.getPackageName() != null) {
+                    return root.getPackageName().toString();
+                }
+            } finally {
+                root.recycle();
+            }
+        }
+        return null;
+    }
+
+    private static boolean nodeBelongs(AccessibilityNodeInfo node, BlockRules.Platform platform) {
+        return node != null && BlockRules.belongsTo(
+                node.getPackageName() == null ? null : node.getPackageName().toString(),
+                platform);
+    }
+
+    private void scanOwnedWindows(AccessibilityEvent event, BlockRules.Platform platform, ScanResult scan) {
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         int screenWidth = metrics.widthPixels;
         int screenHeight = metrics.heightPixels;
@@ -166,7 +240,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                     AccessibilityNodeInfo root = null;
                     try {
                         root = window.getRoot();
-                        if (root != null && !scan.hasReelSignal()) {
+                        if (root != null && nodeBelongs(root, platform) && !scan.hasReelSignal()) {
                             walkTree(root, platform, scan, 0, screenWidth, screenHeight);
                         }
                     } finally {
@@ -179,7 +253,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         AccessibilityNodeInfo active = getRootInActiveWindow();
         if (active != null) {
             try {
-                if (!scan.hasReelSignal()) {
+                if (nodeBelongs(active, platform) && !scan.hasReelSignal()) {
                     walkTree(active, platform, scan, 0, screenWidth, screenHeight);
                 }
             } finally {
@@ -189,12 +263,12 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         AccessibilityNodeInfo source = event != null ? event.getSource() : null;
         if (source != null) {
             try {
-                if (!scan.hasReelSignal()) {
+                if (nodeBelongs(source, platform) && !scan.hasReelSignal()) {
                     walkTree(source, platform, scan, 0, screenWidth, screenHeight);
                     AccessibilityNodeInfo parent = source.getParent();
                     if (parent != null) {
                         try {
-                            if (!scan.hasReelSignal()) {
+                            if (nodeBelongs(parent, platform) && !scan.hasReelSignal()) {
                                 walkTree(parent, platform, scan, 0, screenWidth, screenHeight);
                             }
                         } finally {
@@ -217,6 +291,7 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
             int screenHeight
     ) {
         if (node == null || depth > TREE_DEPTH) return;
+        if (node.getPackageName() != null && !nodeBelongs(node, platform)) return;
         try {
             boolean visible = node.isVisibleToUser();
             String viewId = node.getViewIdResourceName();
@@ -240,11 +315,11 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                         scan.classHit = classHit;
                     }
                 }
-                if (!scan.facebookStructure
+                if (!scan.overlayHit
                         && (platform == BlockRules.Platform.INSTAGRAM || platform == BlockRules.Platform.FACEBOOK)
                         && BlockRules.isVideoSurface(className)
-                        && isLargeViewer(node, screenWidth, screenHeight)) {
-                    scan.facebookStructure = true;
+                        && isOverlayViewer(node, screenWidth, screenHeight)) {
+                    scan.overlayHit = true;
                 }
                 if (platform == BlockRules.Platform.FACEBOOK) {
                     if (scan.contentHit == null && (
@@ -260,15 +335,10 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
                             scan.selectedHit = label;
                         }
                     }
-                    if (!scan.facebookStructure
+                    if (!scan.overlayHit
                             && BlockRules.FACEBOOK_REEL_RECYCLER.equals(className)
                             && isFacebookReelStructure(node, className, screenWidth, screenHeight, depth)) {
-                        scan.facebookStructure = true;
-                    }
-                    if (!scan.facebookStructure
-                            && BlockRules.FACEBOOK_REEL_SURFACE.equals(className)
-                            && isLargeViewer(node, screenWidth, screenHeight)) {
-                        scan.facebookStructure = true;
+                        scan.overlayHit = true;
                     }
                 }
                 if (platform == BlockRules.Platform.INSTAGRAM && scan.selectedHit == null) {
@@ -443,10 +513,10 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         String contentHit;
         String selectedHit;
         boolean safeSurface;
-        boolean facebookStructure;
+        boolean overlayHit;
 
         boolean hasReelSignal() {
-            return viewHit != null || classHit != null || contentHit != null || selectedHit != null || facebookStructure;
+            return viewHit != null || classHit != null || contentHit != null || selectedHit != null || overlayHit;
         }
     }
 
@@ -462,7 +532,8 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         if (BlockRules.isStrictViewId(platform, viewId)) return true;
         if (platform == BlockRules.Platform.INSTAGRAM
                 || platform == BlockRules.Platform.FACEBOOK
-                || platform == BlockRules.Platform.SNAPCHAT) {
+                || platform == BlockRules.Platform.SNAPCHAT
+                || platform == BlockRules.Platform.YOUTUBE) {
             return isLargeViewer(node, screenWidth, screenHeight);
         }
         return true;
@@ -473,6 +544,13 @@ public class ZeroReelAccessibilityService extends AccessibilityService {
         float widthFrac = screenWidth > 0 ? (float) nodeBounds.width() / screenWidth : 0f;
         float heightFrac = screenHeight > 0 ? (float) nodeBounds.height() / screenHeight : 0f;
         return widthFrac >= BlockRules.VIEWER_MIN_WIDTH && heightFrac >= BlockRules.VIEWER_MIN_HEIGHT;
+    }
+
+    private boolean isOverlayViewer(AccessibilityNodeInfo node, int screenWidth, int screenHeight) {
+        node.getBoundsInScreen(nodeBounds);
+        float widthFrac = screenWidth > 0 ? (float) nodeBounds.width() / screenWidth : 0f;
+        float heightFrac = screenHeight > 0 ? (float) nodeBounds.height() / screenHeight : 0f;
+        return widthFrac >= BlockRules.OVERLAY_MIN_WIDTH && heightFrac >= BlockRules.OVERLAY_MIN_HEIGHT;
     }
 
     private boolean isLargeSafeSurface(

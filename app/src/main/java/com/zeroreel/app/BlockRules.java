@@ -57,26 +57,37 @@ final class BlockRules {
             "com.snapchat.android"
     };
 
-    // AntiScroll YouTube Shorts IDs + extra Shorts surfaces
+    // Shorts player surfaces only. shorts_shelf matches the home-page row
+    // and must not count as watching Shorts.
     static final String[] YOUTUBE_VIEW_IDS = {
-            "reel_recycler",
+            "reel_player_page_container",
             "reel_player_page",
-            "shorts_container",
-            "shorts_shelf",
+            "reel_player_overlay",
             "reel_watch_player",
+            "reel_watch_fragment",
+            "reel_recycler",
+            "shorts_container",
             "shorts_player_controls",
             "shorts_video_list",
-            "reel_player_overlay",
+            "shorts_player"
+    };
+
+    static final String[] YOUTUBE_STRICT_VIEW_IDS = {
+            "reel_player_page_container",
+            "reel_player_page",
+            "reel_watch_player",
+            "shorts_container",
             "shorts_player",
-            "reel_watch_fragment",
-            "pivot_shorts"
+            "reel_player_overlay"
     };
 
     static final String[] YOUTUBE_CLASS_HINTS = {
-            "shorts",
             "reelwatch",
             "reel_watch",
-            "shortsvideo"
+            "shortsvideo",
+            "shortsactivity",
+            "shorts.ui",
+            ".shorts."
     };
 
     // Viewer IDs, including the overlay window that opens from feed/explore.
@@ -140,10 +151,7 @@ final class BlockRules {
             "reels.viewer",
             "reelsactivity",
             "fbshorts",
-            "shortformvideo",
-            "fullscreenvideoviewer",
-            "immersivevideo",
-            "video.player"
+            "shortformvideo"
     };
 
     static final String[] FACEBOOK_CONTENT_DESCS = {
@@ -156,12 +164,6 @@ final class BlockRules {
             "fb_shorts",
             "shortscomposer",
             "reels_viewer"
-    };
-
-    static final String[] VIDEO_SURFACE_CLASSES = {
-            "android.view.TextureView",
-            "android.view.SurfaceView",
-            "android.widget.VideoView"
     };
 
     // Tab a11y labels look like "Reels, tab 2 of 6". Bare "Reels" also appears
@@ -237,10 +239,12 @@ final class BlockRules {
     static final String FACEBOOK_REEL_RECYCLER = "androidx.recyclerview.widget.RecyclerView";
     static final String FACEBOOK_REEL_BUTTON = "android.widget.Button";
     static final String FACEBOOK_REEL_SURFACE = "android.view.SurfaceView";
-    static final float FACEBOOK_REEL_MIN_WIDTH = 0.55f;
-    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.4f;
+    static final float FACEBOOK_REEL_MIN_WIDTH = 0.75f;
+    static final float FACEBOOK_REEL_MIN_HEIGHT = 0.55f;
     static final float VIEWER_MIN_WIDTH = 0.45f;
     static final float VIEWER_MIN_HEIGHT = 0.35f;
+    static final float OVERLAY_MIN_WIDTH = 0.8f;
+    static final float OVERLAY_MIN_HEIGHT = 0.65f;
 
     private BlockRules() {}
 
@@ -337,9 +341,14 @@ final class BlockRules {
         return false;
     }
 
+    static boolean belongsTo(String packageName, Platform platform) {
+        return platform != null && matchPackage(packageName) == platform;
+    }
+
     static boolean isStrictViewId(Platform platform, String viewId) {
         if (platform == Platform.INSTAGRAM) return matchHint(viewId, INSTAGRAM_STRICT_VIEW_IDS);
         if (platform == Platform.FACEBOOK) return matchHint(viewId, FACEBOOK_VIEW_IDS);
+        if (platform == Platform.YOUTUBE) return matchHint(viewId, YOUTUBE_STRICT_VIEW_IDS);
         return false;
     }
 
@@ -348,12 +357,6 @@ final class BlockRules {
         return className.endsWith("TextureView")
                 || className.endsWith("SurfaceView")
                 || className.endsWith("VideoView");
-    }
-
-    static boolean isFacebookReelClass(String className) {
-        return FACEBOOK_REEL_RECYCLER.equals(className)
-                || FACEBOOK_REEL_BUTTON.equals(className)
-                || FACEBOOK_REEL_SURFACE.equals(className);
     }
 
     private static boolean contains(String value, String[] list) {

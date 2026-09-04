@@ -34,9 +34,9 @@ Added in Zero Reel:
 
 - Extra YouTube / Instagram IDs and class-name fallbacks
 - TikTok (whole app, because the feed is short-form)
-- Facebook and Messenger Reels (content descriptions, selected Reels tab, not the main feed)
-- Snapchat Spotlight only (`spotlight_container`; Camera, Chat, and Stories stay open)
-- Instagram sends you to chat. Facebook Reels send you to Facebook Settings. Overlay Reels windows are closed with Back, then the redirect. Snapchat Stories and Spotlight use Back.
+- Facebook and Messenger Reels (FbShorts labels, selected Reels tab, fullscreen reel structure — not the main feed or Watch)
+- Snapchat Stories and Spotlight (`story_viewer`, `spotlight_container`; Camera and Chat stay open)
+- Instagram Reels send you to Instagram chat. Facebook Reels send you to Facebook Settings. YouTube Shorts only go Back — they never open Instagram. Overlay Reels windows are closed with Back, then the redirect. Snapchat Stories and Spotlight use Back.
 - Daily allowance (off / 5 / 15 / 30 minutes) before hard block
 - Per-app urge counters (lifetime and today)
 - 5-minute pause (authenticator required)
