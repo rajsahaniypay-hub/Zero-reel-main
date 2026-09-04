@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="zr_bg">#FAFAFA</color>
+    <color name="zr_surface">#FFFFFF</color>
+    <color name="zr_ink">#111111</color>
+    <color name="zr_muted">#6F6F6F</color>
+    <color name="zr_line">#E6E6E6</color>
+    <color name="zr_on_ink">#FAFAFA</color>
+</resources>

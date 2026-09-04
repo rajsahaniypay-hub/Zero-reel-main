@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ZeroReel" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/zr_bg</item>
+        <item name="android:textColorPrimary">@color/zr_ink</item>
+        <item name="android:textColorSecondary">@color/zr_muted</item>
+        <item name="android:statusBarColor">@color/zr_bg</item>
+        <item name="android:navigationBarColor">@color/zr_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorButtonNormal">@color/zr_surface</item>
+        <item name="colorControlActivated">@color/zr_ink</item>
+        <item name="colorPrimary">@color/zr_ink</item>
+        <item name="colorPrimaryVariant">@color/zr_ink</item>
+        <item name="colorOnPrimary">@color/zr_on_ink</item>
+        <item name="colorSecondary">@color/zr_ink</item>
+        <item name="colorOnSecondary">@color/zr_on_ink</item>
+        <item name="colorSurface">@color/zr_surface</item>
+        <item name="colorOnSurface">@color/zr_ink</item>
+        <item name="materialButtonStyle">@style/Widget.ZeroReel.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.ZeroReel.Button.Outline</item>
+    </style>
+</resources>

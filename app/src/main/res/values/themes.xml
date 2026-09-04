@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ZeroReel" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/zr_bg</item>
+        <item name="android:textColorPrimary">@color/zr_ink</item>
+        <item name="android:textColorSecondary">@color/zr_muted</item>
+        <item name="android:statusBarColor">@color/zr_bg</item>
+        <item name="android:navigationBarColor">@color/zr_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorButtonNormal">@color/zr_surface</item>
+        <item name="colorControlActivated">@color/zr_ink</item>
+        <item name="colorPrimary">@color/zr_ink</item>
+        <item name="colorPrimaryVariant">@color/zr_ink</item>
+        <item name="colorOnPrimary">@color/zr_on_ink</item>
+        <item name="colorSecondary">@color/zr_ink</item>
+        <item name="colorOnSecondary">@color/zr_on_ink</item>
+        <item name="colorSurface">@color/zr_surface</item>
+        <item name="colorOnSurface">@color/zr_ink</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="materialButtonStyle">@style/Widget.ZeroReel.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.ZeroReel.Button.Outline</item>
+    </style>
+
+    <style name="Theme.ZeroReel.Splash" parent="Theme.ZeroReel">
+        <item name="android:windowBackground">#111111</item>
+        <item name="android:statusBarColor">#111111</item>
+        <item name="android:navigationBarColor">#111111</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Widget.ZeroReel.Button" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">14dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="backgroundTint">@color/zr_ink</item>
+        <item name="android:textColor">@color/zr_on_ink</item>
+        <item name="elevation">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <style name="Widget.ZeroReel.Button.Outline" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="cornerRadius">14dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="strokeColor">@color/zr_line</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/zr_ink</item>
+        <item name="rippleColor">@color/zr_line</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <style name="Widget.ZeroReel.Button.Text" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/zr_muted</item>
+        <item name="rippleColor">@color/zr_line</item>
+    </style>
+
+    <style name="Text.ZeroReel" parent="@android:style/TextAppearance" />
+
+    <style name="Text.ZeroReel.Title">
+        <item name="android:textColor">@color/zr_ink</item>
+        <item name="android:textSize">34sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="Text.ZeroReel.Section">
+        <item name="android:textColor">@color/zr_muted</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+</resources>
